@@ -2,8 +2,9 @@
 
 <PageTitle>Weather forecast</PageTitle>
 
+@using MongoDB.Driver
 @using LibraryApp.Data
-@inject WeatherForecastService ForecastService
+@inject MongoClient DBService
 
 <h1>Weather forecast</h1>
 
@@ -45,7 +46,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        //forecasts = await DBService.GetForecastAsync(DateTime.Now);
     }
 
 }
