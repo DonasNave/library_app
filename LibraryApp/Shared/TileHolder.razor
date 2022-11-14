@@ -1,0 +1,16 @@
+@using LibraryApp.Data.Models
+
+<div class = "holder">
+    @foreach (var book in Books)
+    {
+        <Article BookBind=book></Article>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<Book>? Books { get; set; }
+
+    [Parameter]
+    public IEnumerable<string> Classes { get; set; } = new[] {"holder"};
+}

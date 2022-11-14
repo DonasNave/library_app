@@ -1,12 +1,24 @@
 @using LibraryApp.Data.Models
 @using System.Globalization
-<div class="alert alert-secondary mt-4">
-    <span class="oi oi-pencil me-2" aria-hidden="true"></span>
-    <strong>@Title.Article.Name</strong>
-    <span>@Title.Article.Released.ToString(CultureInfo.CurrentCulture)</span>
+<div class="tile">
+    <div class="canvas">
+        <img src="https://via.placeholder.com/250" alt="placeholder"/>
+    </div>
+    <div class="info">
+        
+        <h3>@BookBind.Name</h3>
+        <span>@BookBind.Released.Year.ToString()</span>
+        @foreach (var author in BookBind.Authors)
+        {
+            <span class="oi oi-pencil me-2" aria-hidden="true">@author</span>
+        }
+        <span>@BookBind.Description</span>
+    </div>
 </div>
 
 @code {
+
     [Parameter]
-    public MArticle<Book> Title { get; set; }
+    public Book BookBind { get; set; } = new Book();
+
 }
