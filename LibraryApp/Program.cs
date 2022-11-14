@@ -6,13 +6,17 @@ using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using LibraryApp.Areas.Identity;
 using LibraryApp.Data;
+using LibraryApp.Data.Migrations;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddSingleton<MongoClient>(new MongoClient(connectionString));
+var client = new MongoClient(connectionString);
+builder.Services.AddSingleton(client);
+var m = new Migrator(client.GetDatabase("library"));
+m.MigrateAll();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

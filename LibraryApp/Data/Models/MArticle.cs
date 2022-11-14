@@ -1,5 +1,7 @@
 using System.Buffers.Text;
 using System.Drawing;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace LibraryApp.Data.Models;
 
@@ -20,29 +22,17 @@ public class MArticle<T> where T : IArticle
 
 public class Book : IArticle
 {
-    public List<Author> Authors;
-    public List<string> Tags;
-    public string Name;
-    public string AltName;
-    public string Description;
-    public DateTime Released;
-    public string ISBN;
-    public Publisher Publisher;
-    private Guid Id { get; init; }
-
-    public Book(List<Author> authors, List<string> tags, string name, string altName, string description, 
-        DateTime released, string isbn, Publisher publisher, Guid id)
-    {
-        Authors = authors;
-        Tags = tags;
-        Name = name;
-        AltName = altName;
-        Description = description;
-        Released = released;
-        ISBN = isbn;
-        Publisher = publisher;
-        Id = id;
-    }
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = String.Empty;
+    [BsonElement("Authors")] public string[] Authors { get; set; } = new[] { String.Empty, };
+    [BsonElement("Tags")] public string[] Tags { get; set; } = new[] { String.Empty, };
+    [BsonElement("Name")] public string Name { get; set; } = String.Empty;
+    [BsonElement("AltName")] public string AltName { get; set; } = String.Empty;
+    [BsonElement("Description")] public string Description { get; set; } = String.Empty;
+    [BsonElement("Released")] public DateTime Released { get; set; }
+    [BsonElement("ISBN")] public string ISBN { get; set; } = String.Empty;
+    [BsonElement("Publisher")] public string Publisher { get; set; } = String.Empty;
 
     public bool Update()
     {
