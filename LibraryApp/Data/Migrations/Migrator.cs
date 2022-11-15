@@ -22,6 +22,41 @@ public class Migrator
             Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
             
         },
+        new Book
+        {
+            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
+            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            
+        },
+        new Book
+        {
+            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
+            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            
+        },
+        new Book
+        {
+            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
+            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            
+        },
+        new Book
+        {
+            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
+            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            
+        },
+        new Book
+        {
+            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
+            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            
+        },
     };
     
     private readonly IMongoDatabase _database;
