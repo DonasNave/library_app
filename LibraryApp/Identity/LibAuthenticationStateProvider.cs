@@ -7,7 +7,7 @@ namespace LibraryApp.Areas.Identity;
 public class LibAuthenticationStateProvider : AuthenticationStateProvider
 {
     private readonly ProtectedSessionStorage _sessionStorage;
-    private ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+    private readonly ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
     public LibAuthenticationStateProvider(ProtectedSessionStorage sessionStorage)
     {
@@ -19,7 +19,7 @@ public class LibAuthenticationStateProvider : AuthenticationStateProvider
         try
         {
             var userSessionDetails = 
-                await _sessionStorage.GetAsync<LibraryUser>("UserSession");
+                await _sessionStorage.GetAsync<LibraryUser>(nameof(LibraryUser));
             
             if (!userSessionDetails.Success) 
                 return new AuthenticationState(_anonymous);
@@ -27,9 +27,9 @@ public class LibAuthenticationStateProvider : AuthenticationStateProvider
             var userSession = userSessionDetails.Value;
             var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
             {
-                new Claim(ClaimTypes.Name, userSession?.UserName ?? String.Empty),
-                new Claim(ClaimTypes.Role, userSession?.Role.ToString() ?? String.Empty)
-            }));
+                new (ClaimTypes.Name, userSession?.UserName ?? String.Empty),
+                new (ClaimTypes.Role, userSession?.Role.ToString() ?? String.Empty)
+            }, "LibUserAuth"));
             
             return await Task.FromResult(new AuthenticationState(claimsPrincipal));
         }
@@ -40,10 +40,27 @@ public class LibAuthenticationStateProvider : AuthenticationStateProvider
         
     }
 
-    public async Task UpdateAuthenticationState(LibraryUser libraryUser)
+    public async Task UpdateAuthenticationState(LibraryUser? libraryUser)
     {
-        await _sessionStorage.DeleteAsync("UserSession");
-        var claimsPrincipal = _anonymous;
+        ClaimsPrincipal claimsPrincipal;
+
+        if (libraryUser is null)
+        {
+            await _sessionStorage.DeleteAsync(nameof(LibraryUser));
+            claimsPrincipal = _anonymous;
+        }
+        else
+        {
+            await _sessionStorage.SetAsync(nameof(LibraryUser), libraryUser);
+        
+            claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+            {
+                new (ClaimTypes.Name, libraryUser.UserName ?? String.Empty),
+                new (ClaimTypes.Role, libraryUser.Role.ToString())
+            }, "LibUserAuth"));
+        }
+        
+        
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
     }
 }

@@ -10,48 +10,48 @@ public class Migrator
 {
     private readonly ICollection<Book> _dummyBooks = new List<Book>()
     {
-        new Book 
+        new()
         {
             Authors = new[]{"Bonifác Arnošt"}, Tags = new[]{"adventure", "drama"}, 
             Name = "O čem spím", AltName = "Nic moc", Description = "Fakt zajímavý dílo se mi zdá.", 
             Released = DateTime.Now, ISBN = "null", Publisher = "Černá hora spol."
         },
-        new Book
+        new()
         {
             Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
             Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
             Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
             
         },
-        new Book
+        new()
         {
             Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
             Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
             Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
             
         },
-        new Book
+        new()
         {
             Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
             Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
             Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
             
         },
-        new Book
+        new()
         {
             Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
             Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
             Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
             
         },
-        new Book
+        new()
         {
             Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
             Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
             Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
             
         },
-        new Book
+        new()
         {
             Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
             Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
@@ -62,11 +62,11 @@ public class Migrator
 
     private readonly ICollection<LibraryUser> _dummyUsers = new List<LibraryUser>()
     {
-        new LibraryUser("admin", UserRole.Admin)
+        new ("admin", UserRole.Admin)
         {
             PasswordHash = "admin"
         },
-        new LibraryUser("user", UserRole.Customer)
+        new ("user", UserRole.Customer)
         {
             PasswordHash = "user"
         }

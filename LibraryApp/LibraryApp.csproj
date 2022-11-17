@@ -21,8 +21,5 @@
         <PackageReference Include="MongoDB.Driver" Version="2.18.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Shared\Layout" />
-    </ItemGroup>
 
 </Project>

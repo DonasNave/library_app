@@ -1,12 +1,7 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.EntityFrameworkCore;
 using LibraryApp.Areas.Identity;
-using LibraryApp.Data;
 using LibraryApp.Data.Migrations;
+using LibraryApp.Identity;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using MongoDB.Driver;
 

@@ -1,10 +1,13 @@
 @page "/login"
+
 @using LibraryApp.Areas.Identity
-@using System.Runtime.InteropServices.JavaScript
-@inject LibraryUserProvider _libraryUserProvider
-@inject AuthenticationStateProvider _AuthenticationStateProvider
-@inject IJSRuntime _Js
-@inject NavigationManager _NavigationManager
+@using LibraryApp.Identity
+
+@inject LibraryUserProvider LibraryUserProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime Js
+@inject NavigationManager NavigationManager
+
 
 <PageTitle>Login to account</PageTitle>
 
@@ -12,7 +15,7 @@
     <div>
         <h3>Login</h3>
     </div>
-    <div>
+    <div class="login-form">
         <div>
             <label>Username</label>
             <input @bind="_model.UserName" type="text" class="form-control" placeholder="user"/>
@@ -26,9 +29,9 @@
         </div>
     </div>
 </div>
-s
-@code {
 
+@code {
+    
     private struct UserModel
     {
         public string UserName { get; set; }
@@ -39,17 +42,16 @@ s
 
     private async Task Authenticate()
     {
-        var userAcc = await _libraryUserProvider.GetUser(_model.UserName);
+        var userAcc = await LibraryUserProvider.GetUser(_model.UserName);
         if (userAcc is null || userAcc.PasswordHash != _model.UserPass)
         {
-            await _Js.InvokeVoidAsync("alert", "Invalid username or password");
+            await Js.InvokeVoidAsync("alert", "Invalid username or password");
             return;
         }
 
-        var _libAuthState = _AuthenticationStateProvider as LibAuthenticationStateProvider;
-        await _libAuthState.UpdateAuthenticationState(
-            new LibraryUser(userName: userAcc.UserName, userRole: userAcc.Role));
+        if (AuthenticationStateProvider is LibAuthenticationStateProvider libAuthState ) 
+            await libAuthState.UpdateAuthenticationState(userAcc);
         
-        _NavigationManager.NavigateTo("/", true);
+        NavigationManager.NavigateTo("/", true);
     }
 }

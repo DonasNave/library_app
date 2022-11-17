@@ -1,12 +1,23 @@
-﻿<AuthorizeView>
+﻿@using LibraryApp.Areas.Identity
+@inject AuthenticationStateProvider AuthStateProvider;
+@inject NavigationManager NavigationManager;
+
+<AuthorizeView>
     <Authorized>
-        <a href="Identity/Account/Manage">Hello, @context.User.Identity?.Name!</a>
-        <form method="post" action="Identity/Account/LogOut">
-            <button type="submit" class="nav-link btn btn-link">Log out</button>
-        </form>
+        <a href="">@context.User.Identity?.Name</a>
+        <NavLink class="nav-link" @onclick="Logout" style="cursor: pointer">Logout</NavLink>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
         <NavLink class="nav-link" href="login">Login</NavLink>
     </NotAuthorized>
 </AuthorizeView>
+
+@code{
+
+    private async Task Logout()
+    {
+        var libAuthStateProvider = (LibAuthenticationStateProvider) AuthStateProvider;
+        await libAuthStateProvider.UpdateAuthenticationState(null);
+    }
+
+}

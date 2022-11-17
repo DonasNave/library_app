@@ -20,23 +20,24 @@
             }
             <span>@BookBind.Description</span>
         </div>
-        @if (true)
-        {
-            <div class="admin-book">
-                <button class="btn-primary">
-                    <i class="material-icons md-18">visibility</i>
-                </button>
-                <button class="btn-primary">
-                    <i class="material-icons md-18">add</i>
-                </button>
-                <button class="btn-primary">
-                    <i class="material-icons md-18">remove</i>
-                </button>
-                <button class="btn-primary">
-                    <i class="material-icons md-18">delete</i>
-                </button>
-            </div>   
-        }
+        <AuthorizeView>
+            <Authorized>
+                <div class="admin-book">
+                    <button class="btn-primary">
+                        <i class="material-icons md-18">visibility</i>
+                    </button>
+                    <button class="btn-primary">
+                        <i class="material-icons md-18">add</i>
+                    </button>
+                    <button class="btn-primary">
+                        <i class="material-icons md-18">remove</i>
+                    </button>
+                    <button class="btn-primary">
+                        <i class="material-icons md-18">delete</i>
+                    </button>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </div>
     <div class="@_showingClass">
         
