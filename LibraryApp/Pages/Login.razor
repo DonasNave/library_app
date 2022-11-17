@@ -1,0 +1,55 @@
+@page "/login"
+@using LibraryApp.Areas.Identity
+@using System.Runtime.InteropServices.JavaScript
+@inject LibraryUserProvider _libraryUserProvider
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject IJSRuntime _Js
+@inject NavigationManager _NavigationManager
+
+<PageTitle>Login to account</PageTitle>
+
+<div>
+    <div>
+        <h3>Login</h3>
+    </div>
+    <div>
+        <div>
+            <label>Username</label>
+            <input @bind="_model.UserName" type="text" class="form-control" placeholder="user"/>
+        </div>
+        <div>
+            <label>Password</label>
+            <input @bind="_model.UserPass" type="password" class="form-control"/>
+        </div>
+        <div>
+            <button @onclick="Authenticate" class="btn-primary">Login</button>
+        </div>
+    </div>
+</div>
+s
+@code {
+
+    private struct UserModel
+    {
+        public string UserName { get; set; }
+        public string UserPass { get; set; }
+    }
+
+    private UserModel _model;
+
+    private async Task Authenticate()
+    {
+        var userAcc = await _libraryUserProvider.GetUser(_model.UserName);
+        if (userAcc is null || userAcc.PasswordHash != _model.UserPass)
+        {
+            await _Js.InvokeVoidAsync("alert", "Invalid username or password");
+            return;
+        }
+
+        var _libAuthState = _AuthenticationStateProvider as LibAuthenticationStateProvider;
+        await _libAuthState.UpdateAuthenticationState(
+            new LibraryUser(userName: userAcc.UserName, userRole: userAcc.Role));
+        
+        _NavigationManager.NavigateTo("/", true);
+    }
+}

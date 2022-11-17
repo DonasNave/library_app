@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Reflection.Metadata;
+using LibraryApp.Areas.Identity;
 using LibraryApp.Data.Models;
 using MongoDB.Driver;
 
@@ -58,7 +59,19 @@ public class Migrator
             
         },
     };
-    
+
+    private readonly ICollection<LibraryUser> _dummyUsers = new List<LibraryUser>()
+    {
+        new LibraryUser("admin", UserRole.Admin)
+        {
+            PasswordHash = "admin"
+        },
+        new LibraryUser("user", UserRole.Customer)
+        {
+            PasswordHash = "user"
+        }
+    };
+
     private readonly IMongoDatabase _database;
     
     public Migrator(IMongoDatabase database)
@@ -67,7 +80,7 @@ public class Migrator
     }
 
 
-    public bool MigrateAll() => MigrateBooks();
+    public bool MigrateAll() => MigrateBooks() && MigrateUsers();
 
     private bool MigrateBooks()
     {
@@ -84,5 +97,19 @@ public class Migrator
         return true;
     }
 
+    private bool MigrateUsers()
+    {
+        try
+        {
+            var col = _database.GetCollection<LibraryUser>(nameof(LibraryUser));
+            col.DeleteMany(user => true);
+            col.InsertMany( _dummyUsers);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+        return true;
+    }
 }
 

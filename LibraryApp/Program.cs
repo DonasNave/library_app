@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using LibraryApp.Areas.Identity;
 using LibraryApp.Data;
 using LibraryApp.Data.Migrations;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,13 +20,12 @@ var m = new Migrator(client.GetDatabase("library"));
 m.MigrateAll();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
+builder.Services.AddAuthenticationCore();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services
-    .AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-builder.Services.AddSingleton<WeatherForecastService>();
-
+builder.Services.AddScoped<ProtectedSessionStorage>();
+builder.Services.AddScoped<AuthenticationStateProvider, LibAuthenticationStateProvider>();
+builder.Services.AddSingleton<LibraryUserProvider>();
 
 var app = builder.Build();
 
