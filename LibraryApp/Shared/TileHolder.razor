@@ -8,6 +8,7 @@
 </div>
 
 @code {
+
     [Parameter]
-    public IEnumerable<Book>? Books { get; set; }
+    public IEnumerable<Book> Books { get; set; } = new Book[]{};
 }
