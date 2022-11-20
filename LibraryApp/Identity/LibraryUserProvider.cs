@@ -1,4 +1,4 @@
-using LibraryApp.Areas.Identity;
+using LibraryApp.Data.Models;
 using MongoDB.Driver;
 
 namespace LibraryApp.Identity;
@@ -27,4 +27,23 @@ public class LibraryUserProvider
         }
     }
 
+    public async Task<LibraryUser?> RegisterUser(string userName, string password)
+    {
+        var newUser = new LibraryUser(userName, UserRole.Customer)
+        {
+            PasswordHash = password
+        };
+        
+        try
+        {
+            var db = _mongoClient.GetDatabase("library");
+            var col = db.GetCollection<LibraryUser>(nameof(LibraryUser));
+            await col.InsertOneAsync(newUser);
+            return newUser;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

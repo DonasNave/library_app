@@ -1,15 +1,13 @@
 using Microsoft.AspNetCore.Components.Authorization;
-using LibraryApp.Areas.Identity;
-using LibraryApp.Data.Migrations;
 using LibraryApp.Identity;
+using LibraryApp.Data.Migrations;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var client = new MongoClient(connectionString);
+var client = new MongoClient(builder.Configuration.GetConnectionString("DefaultConnection"));
 builder.Services.AddSingleton(client);
 var m = new Migrator(client.GetDatabase("library"));
 m.MigrateAll();

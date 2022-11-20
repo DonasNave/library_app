@@ -1,6 +1,79 @@
 @page "/Register"
-<h3>Register</h3>
+@using LibraryApp.Identity
+@using MongoDB.Driver
+@inject IJSRuntime Js
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject LibraryUserProvider LibraryUserProvider
+@inject MongoClient DbClient
+
+<PageTitle>Register account</PageTitle>
+
+<div>
+    <div>
+        <h3>Register</h3>
+    </div>
+    <div class="login-form">
+        <div>
+            <label>Username</label>
+            <input @bind="_model.UserName" type="text" class="form-control" placeholder="user"/>
+        </div>
+        <div>
+            <label>Password</label>
+            <input @bind="_model.UserPass" type="password" @onfocus="Verify" 
+                   @onfocusout="Verify" class="form-control"/>
+        </div>
+        <div>
+            <label>Repeat password</label>
+            <input @bind="_model.UserPassCheck" type="password" @onfocus="Verify"
+                   @onfocusout="Verify" class="form-control"/>
+        </div>
+        <div>
+            <label style="color: #ff3c00">@_passCheckError</label>
+        </div>
+        <div>
+            <button @onclick="RegisterUser" class="btn-primary">Register</button>
+        </div>
+    </div>
+</div>
 
 @code {
+
+    private struct UserModel
+    {
+        public string UserName { get; set; }
+        public string UserPass { get; set; }
+        public string UserPassCheck { get; set; }
+    }
     
+    private string _passCheckError = String.Empty; 
+
+    private UserModel _model;
+
+    private void Verify() => _passCheckError = (_model.UserPass != _model.UserPassCheck) ?
+                "Passwords do not match." : String.Empty;
+
+    private async Task RegisterUser()
+    {
+        var userAcc = await LibraryUserProvider.GetUser(_model.UserName);
+        if (userAcc is not null)
+        {
+            await Js.InvokeVoidAsync("alert", $"User with name {_model.UserName} already exists");
+            return;
+        }
+
+        userAcc = await LibraryUserProvider.RegisterUser(_model.UserName, _model.UserPass);
+        
+        if (userAcc is not null)
+        {
+            if (AuthenticationStateProvider is LibAuthenticationStateProvider libAuthState)
+            {
+                await libAuthState.UpdateAuthenticationState(userAcc);
+                NavigationManager.NavigateTo("/", true);
+                return;
+            }
+        }
+        
+        await Js.InvokeVoidAsync("alert", $"There was trouble during user registration.");
+    }
 }

@@ -1,6 +1,5 @@
 @page "/login"
 
-@using LibraryApp.Areas.Identity
 @using LibraryApp.Identity
 
 @inject LibraryUserProvider LibraryUserProvider
@@ -31,7 +30,7 @@
 </div>
 
 @code {
-    
+
     private struct UserModel
     {
         public string UserName { get; set; }

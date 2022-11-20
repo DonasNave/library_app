@@ -1,8 +1,9 @@
 using System.Security.Claims;
+using LibraryApp.Data.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
-namespace LibraryApp.Areas.Identity;
+namespace LibraryApp.Identity;
 
 public class LibAuthenticationStateProvider : AuthenticationStateProvider
 {

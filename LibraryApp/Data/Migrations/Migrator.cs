@@ -1,4 +1,4 @@
-using LibraryApp.Areas.Identity;
+using LibraryApp.Identity;
 using LibraryApp.Data.Models;
 using MongoDB.Driver;
 

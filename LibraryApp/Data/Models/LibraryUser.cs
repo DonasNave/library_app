@@ -1,7 +1,6 @@
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 
-namespace LibraryApp.Areas.Identity;
+namespace LibraryApp.Data.Models;
 public enum UserRole
 {
     Admin = 0,

@@ -1,5 +1,13 @@
 @page "/account"
-<h3>Account</h3>
+<AuthorizeView>
+    <NotAuthorized>
+        <h3>Not logged in</h3>
+        <p>In order to see anything you need to be logged in</p>
+    </NotAuthorized>
+    <Authorized>
+        <h3>Account</h3>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     
