@@ -1,16 +1,19 @@
+using LibraryApp.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using LibraryApp.Identity;
 using LibraryApp.Data.Migrations;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using MongoDB.Driver;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-var client = new MongoClient(builder.Configuration.GetConnectionString("DefaultConnection"));
-builder.Services.AddSingleton(client);
-var m = new Migrator(client.GetDatabase("library"));
-m.MigrateAll();
+
+builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
+
+builder.Services.AddSingleton<IMongoDbSettings>(serviceProvider =>
+    serviceProvider.GetRequiredService<IOptions<MongoDbSettings>>().Value);
+
+builder.Services.AddSingleton(typeof(IMongoRepository<>), typeof(MongoRepository<>));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddAuthenticationCore();
@@ -19,6 +22,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<AuthenticationStateProvider, LibAuthenticationStateProvider>();
 builder.Services.AddSingleton<LibraryUserProvider>();
+builder.Services.AddSingleton<Migrator>();
 
 var app = builder.Build();
 

@@ -1,6 +1,4 @@
-using LibraryApp.Identity;
 using LibraryApp.Data.Models;
-using MongoDB.Driver;
 
 namespace LibraryApp.Data.Migrations;
 
@@ -70,11 +68,14 @@ public class Migrator
         }
     };
 
-    private readonly IMongoDatabase _database;
-    
-    public Migrator(IMongoDatabase database)
+    private readonly IMongoRepository<LibraryUser> _libUsersRepository;
+    private readonly IMongoRepository<Book> _booksRepository;
+
+    public Migrator(IMongoRepository<LibraryUser> libUsersRepository, 
+                    IMongoRepository<Book> booksRepository )
     {
-        _database = database;
+        _libUsersRepository = libUsersRepository;
+        _booksRepository = booksRepository;
     }
 
 
@@ -84,9 +85,8 @@ public class Migrator
     {
         try
         {
-            var col = _database.GetCollection<Book>(nameof(Book));
-            col.DeleteMany(book => true);
-            col.InsertMany( _dummyBooks); // TODO session handle
+            _booksRepository.DeleteMany(book => true);
+            _booksRepository.InsertMany( _dummyBooks);
         }
         catch (Exception)
         {
@@ -99,9 +99,8 @@ public class Migrator
     {
         try
         {
-            var col = _database.GetCollection<LibraryUser>(nameof(LibraryUser));
-            col.DeleteMany(user => true);
-            col.InsertMany( _dummyUsers);
+            _libUsersRepository.DeleteMany(user => true);
+            _libUsersRepository.InsertMany( _dummyUsers);
         }
         catch (Exception)
         {

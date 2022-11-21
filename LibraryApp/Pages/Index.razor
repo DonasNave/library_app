@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using LibraryApp.Data.Migrations
+@inject Migrator Migrator
 
 <PageTitle>Index</PageTitle>
 
@@ -12,3 +14,12 @@
         <h2>Hello, visitor.</h2>
     </NotAuthorized>
 </AuthorizeView>
+
+@code
+{
+    protected override Task OnInitializedAsync()
+    {
+        Migrator.MigrateAll();
+        return Task.CompletedTask;
+    }
+}

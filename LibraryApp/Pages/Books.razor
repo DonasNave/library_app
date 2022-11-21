@@ -2,9 +2,9 @@
 
 <PageTitle>Books</PageTitle>
 
-@using MongoDB.Driver
 @using LibraryApp.Data.Models
-@inject MongoClient DbClient
+@using LibraryApp.Data
+@inject IMongoRepository<Book> MongoRepository
 
 <h1>Výpis knih</h1>
 
@@ -26,9 +26,7 @@ else
 
     protected override async Task<bool> OnInitializedAsync()
     {
-        var db = DbClient.GetDatabase("library");
-        var col = db.GetCollection<Book>(nameof(Book));
-        _books = await col.FindAsync(x => true).Result.ToListAsync();
+        _books = MongoRepository.FilterBy(book => true);
         return true;
     }
 

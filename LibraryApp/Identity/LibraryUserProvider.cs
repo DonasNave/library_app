@@ -1,3 +1,4 @@
+using LibraryApp.Data;
 using LibraryApp.Data.Models;
 using MongoDB.Driver;
 
@@ -5,21 +6,20 @@ namespace LibraryApp.Identity;
 
 public class LibraryUserProvider
 {
-    private readonly MongoClient _mongoClient;
+    private readonly IMongoRepository<LibraryUser> _libUsersRepository;
 
-    public LibraryUserProvider(MongoClient mongoClient)
+    public LibraryUserProvider(IMongoRepository<LibraryUser> libUsersRepository)
     {
-        _mongoClient = mongoClient;
+        _libUsersRepository = libUsersRepository;
     }
 
     public async Task<LibraryUser?> GetUser(string userName)
     {
         try
         {
-            var db = _mongoClient.GetDatabase("library");
-            var col = db.GetCollection<LibraryUser>(nameof(LibraryUser));
-            var res = await col.FindAsync(x => x.UserName == userName);
-            return res.Single();
+            var res = await _libUsersRepository.FindOneAsync(
+                x => x.UserName == userName);
+            return res;
         }
         catch
         {
@@ -36,9 +36,7 @@ public class LibraryUserProvider
         
         try
         {
-            var db = _mongoClient.GetDatabase("library");
-            var col = db.GetCollection<LibraryUser>(nameof(LibraryUser));
-            await col.InsertOneAsync(newUser);
+            await _libUsersRepository.InsertOneAsync(newUser);
             return newUser;
         }
         catch
