@@ -1,0 +1,26 @@
+@page "/users-manager"
+@using LibraryApp.Data.Models
+@using LibraryApp.Data
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IMongoRepository<LibraryUser> MongoRepository
+
+<h3>UsersManager</h3>
+
+@foreach(var user in _users)
+{
+    <div>
+        <h4>@user.UserName</h4>
+        <span>@user.Role.ToString()</span>
+    </div>
+}
+
+@code {
+    private IEnumerable<LibraryUser> _users = new List<LibraryUser>();
+    
+    protected override Task<bool> OnInitializedAsync()
+    {
+        _users = MongoRepository.FilterBy(user => true);
+        return Task.Run(() => true);
+    }
+}

@@ -21,7 +21,7 @@
         </div>
         <div>
             <label>Password</label>
-            <input @bind="_model.UserPass" type="password" class="form-control"/>
+            <input @bind="_model.UserPass" @onkeydown="Keypress" type="password" class="form-control"/>
         </div>
         <div>
             <button @onclick="Authenticate" class="btn-primary">Login</button>
@@ -52,5 +52,10 @@
             await libAuthState.UpdateAuthenticationState(userAcc);
         
         NavigationManager.NavigateTo("/", true);
+    }
+
+    private async void Keypress(KeyboardEventArgs args)
+    {
+        if (args.Code.Equals("Enter")) await Authenticate();
     }
 }

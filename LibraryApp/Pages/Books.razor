@@ -24,10 +24,10 @@ else
 @code {
     private IEnumerable<Book>? _books;
 
-    protected override async Task<bool> OnInitializedAsync()
+    protected override Task<bool> OnInitializedAsync()
     {
         _books = MongoRepository.FilterBy(book => true);
-        return true;
+        return Task.Run(() => true);
     }
 
 }

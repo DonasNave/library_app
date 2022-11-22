@@ -8,62 +8,66 @@ public class Migrator
     {
         new()
         {
-            Authors = new[]{"Bonifác Arnošt"}, Tags = new[]{"adventure", "drama"}, 
-            Name = "O čem spím", AltName = "Nic moc", Description = "Fakt zajímavý dílo se mi zdá.", 
-            Released = DateTime.Now, ISBN = "null", Publisher = "Černá hora spol."
+            Author = new (){ Name="Bonifác Arnošt", Birth = DateTime.Now.AddYears(-55), BooksWritten = new (){"O čem spím"}},
+            Tags = new(){"adventure", "drama"}, Name = "O čem spím", AltName = "Nic moc", Copies = 5,
+            Description = "Fakt zajímavý dílo se mi zdá.", Released = DateTime.Now, ISBN = "null", Publisher = "Černá hora spol."
         },
         new()
         {
-            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
-            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
+            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
             
         },
         new()
         {
-            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
-            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
+            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
             
         },
         new()
         {
-            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
-            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
+            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
             
         },
         new()
         {
-            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
-            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
+            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
             
         },
         new()
         {
-            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
-            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
+            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
             
         },
         new()
         {
-            Authors = new []{ "Jarda Frantů" }, Tags = new[]{"sci-fi", "drama"}, 
-            Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol."
+            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
+            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
             
         },
     };
 
     private readonly ICollection<LibraryUser> _dummyUsers = new List<LibraryUser>()
     {
-        new ("admin", UserRole.Admin)
+        new()
         {
+            UserName = "admin",
+            Role = UserRole.Admin,
             PasswordHash = "admin"
         },
-        new ("user", UserRole.Customer)
+        new ()
         {
+            UserName = "user",
+            Role = UserRole.Customer,
             PasswordHash = "user"
         }
     };

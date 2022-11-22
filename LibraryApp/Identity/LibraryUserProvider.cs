@@ -29,8 +29,10 @@ public class LibraryUserProvider
 
     public async Task<LibraryUser?> RegisterUser(string userName, string password)
     {
-        var newUser = new LibraryUser(userName, UserRole.Customer)
+        LibraryUser newUser = new()
         {
+            UserName = userName,
+            Role = UserRole.Customer,
             PasswordHash = password
         };
         

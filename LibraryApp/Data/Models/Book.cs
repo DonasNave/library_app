@@ -4,16 +4,24 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace LibraryApp.Data.Models;
 
 [BsonCollection("Book")]
-public class Book : IDocument
+public record Book : IDocument
 {
     public ObjectId Id { get; set; }
     public DateTime CreatedAt { get; }
-    [BsonElement("Authors")] public string[] Authors { get; set; } = new[] { String.Empty, };
-    [BsonElement("Tags")] public string[] Tags { get; set; } = new[] { String.Empty, };
-    [BsonElement("Name")] public string Name { get; set; } = String.Empty;
-    [BsonElement("AltName")] public string AltName { get; set; } = String.Empty;
-    [BsonElement("Description")] public string Description { get; set; } = String.Empty;
-    [BsonElement("Released")] public DateTime Released { get; set; }
-    [BsonElement("ISBN")] public string ISBN { get; set; } = String.Empty;
-    [BsonElement("Publisher")] public string Publisher { get; set; } = String.Empty;
+    public List<String> Tags { get; set; } = new List<string>();
+    public string Name { get; set; } = String.Empty;
+    public string AltName { get; set; } = String.Empty;
+    public string Description { get; set; } = String.Empty;
+    public DateTime Released { get; init; }
+    public string ISBN { get; init; } = String.Empty;
+    public string Publisher { get; set; } = String.Empty;
+    public uint Copies { get; set; } = 0;
+    public Author Author { get; init; }
+}
+
+public struct Author
+{
+    public string Name { get; set; }
+    public DateTime Birth { get; set; }
+    public List<String> BooksWritten { get; set; }
 }

@@ -5,6 +5,7 @@
 <AuthorizeView>
     <Authorized>
         <NavLink class="nav-link" href="account">Account: @context.User.Identity?.Name</NavLink>
+        <NavLink class="nav-link" href="">Notifications</NavLink>
         <NavLink class="nav-link" @onclick="Logout" style="cursor: pointer">Logout</NavLink>
     </Authorized>
     <NotAuthorized>
@@ -19,6 +20,7 @@
     {
         var libAuthStateProvider = (LibAuthenticationStateProvider) AuthStateProvider;
         await libAuthStateProvider.UpdateAuthenticationState(null);
+        NavigationManager.NavigateTo("/");
     }
 
 }

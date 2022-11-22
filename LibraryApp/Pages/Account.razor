@@ -1,11 +1,14 @@
 @page "/account"
-<AuthorizeView>
+@attribute [Authorize]
+
+<AuthorizeView Roles="Admin">
     <NotAuthorized>
-        <h3>Not logged in</h3>
-        <p>In order to see anything you need to be logged in</p>
+        <h3>Not an admin</h3>
+        <p>You're not an admin</p>
     </NotAuthorized>
     <Authorized>
-        <h3>Account</h3>
+        <h3>Admin</h3>
+        <p>Hey there, admin-thingy</p>
     </Authorized>
 </AuthorizeView>
 
