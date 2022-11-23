@@ -1,22 +1,26 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
 
 namespace LibraryApp.Data.Models;
+
+public interface ISeachable<TDocument> where TDocument : IDocument
+{
+    static abstract FilterDefinition<TDocument> SearchFilter(string term);
+} 
 
 public interface IDocument
 {
     [BsonId]
     [BsonRepresentation(BsonType.String)]
     ObjectId Id { get; set; }
-
     DateTime CreatedAt { get; }
 }
 
-public abstract class Document : IDocument
+public abstract record Document : IDocument
 {
-    public ObjectId Id { get; set; }
-
-    public DateTime CreatedAt => Id.CreationTime;
+    public abstract ObjectId Id { get; set; }
+    public abstract DateTime CreatedAt { get; init; }
 }
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]

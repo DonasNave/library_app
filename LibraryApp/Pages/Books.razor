@@ -4,11 +4,17 @@
 
 @using LibraryApp.Data.Models
 @using LibraryApp.Data
+@using MongoDB.Driver
 @inject IMongoRepository<Book> MongoRepository
 
 <h1>Výpis knih</h1>
 
 <p>Přehled všech knih v naší knihovně.</p>
+
+<div>
+    <input @bind="SearchInput" @onkeydown="Search"/>
+    <button class="btn-primary" @onclick="Search">Search</button>
+</div>
 
 @if (_books == null)
 {
@@ -18,16 +24,27 @@
 }
 else
 {
+    <SearchBar BookLink="MongoRepository"></SearchBar>
     <TileHolder Books=_books></TileHolder>
 }
 
 @code {
     private IEnumerable<Book>? _books;
 
+    private string? SearchInput { get; set; }
+
+    private async Task Search()
+    {
+        if (SearchInput?.Length > 2)
+        {
+            _books = MongoRepository.FilterBy(Book.SearchFilter(SearchInput));
+        }                                                                                 
+        await Task.Run(() => null);
+    }
+    
     protected override Task<bool> OnInitializedAsync()
     {
         _books = MongoRepository.FilterBy(book => true);
         return Task.Run(() => true);
     }
-
 }

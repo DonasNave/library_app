@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using LibraryApp.Data.Models;
+using MongoDB.Driver;
 
 namespace LibraryApp.Data;
 
@@ -9,6 +10,9 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument
 
     IEnumerable<TDocument> FilterBy(
         Expression<Func<TDocument, bool>> filterExpression);
+    
+    IEnumerable<TDocument> FilterBy(
+        FilterDefinition<TDocument> filterDefinition);
 
     IEnumerable<TProjected> FilterBy<TProjected>(
         Expression<Func<TDocument, bool>> filterExpression,

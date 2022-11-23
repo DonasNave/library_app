@@ -35,6 +35,11 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         return _collection.Find(filterExpression).ToEnumerable();
     }
 
+    public IEnumerable<TDocument> FilterBy(FilterDefinition<TDocument> filterDefinition)
+    {
+        return _collection.Find(filterDefinition).ToEnumerable();
+    }
+
     public virtual IEnumerable<TProjected> FilterBy<TProjected>(
         Expression<Func<TDocument, bool>> filterExpression,
         Expression<Func<TDocument, TProjected>> projectionExpression)

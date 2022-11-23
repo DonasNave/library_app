@@ -1,4 +1,6 @@
+using System.Linq.Expressions;
 using MongoDB.Bson;
+using MongoDB.Driver;
 
 namespace LibraryApp.Data.Models;
 public enum UserRole
@@ -9,18 +11,25 @@ public enum UserRole
 }
 
 [BsonCollection("LibraryUser")]
-public sealed class LibraryUser : IDocument
+public record LibraryUser : Document, ISeachable<LibraryUser>
 {
-    public ObjectId Id { get; set; }
-    public DateTime CreatedAt { get; }
+    public override ObjectId Id { get; set; }
+    public override DateTime CreatedAt { get; init; }
     public UserRole Role { get; set; } = UserRole.Anonymous;
     public string UserName { get; set; } = String.Empty;
+    
+    public string Name { get; set; } = String.Empty;
+    public string Surname { get; set; } = String.Empty;
     public string PasswordHash { get; set; } = String.Empty;
-    public List<BookBorrow> Borrows { get; set; } = new List<BookBorrow>();
-    public List<Notification> Notifications { get; set; } = new List<Notification>();
+    public List<BookBorrow> Borrows { get; set; }
+    public List<Notification> Notifications { get; set; }
+    public static FilterDefinition<LibraryUser> SearchFilter(string searchTerm)
+    {
+        throw new NotImplementedException();
+    }                                                                
 }
 
-public struct BookBorrow
+public class BookBorrow
 {
     public string Id { get; init; }
     public string Name { get; init; }
@@ -29,7 +38,7 @@ public struct BookBorrow
     public int Coppies { get; init; }
 }
 
-public struct Notification
+public class Notification
 {
     public string Id { get; init; }
     public DateTime Created { get; init; }
