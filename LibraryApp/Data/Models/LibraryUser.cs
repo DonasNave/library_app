@@ -11,7 +11,7 @@ public enum UserRole
 }
 
 [BsonCollection("LibraryUser")]
-public record LibraryUser : Document, ISeachable<LibraryUser>
+public record LibraryUser : Document, ISearchable<LibraryUser>
 {
     public override ObjectId Id { get; set; }
     public override DateTime CreatedAt { get; init; }

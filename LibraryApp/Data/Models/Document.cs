@@ -1,10 +1,11 @@
+using System.Runtime.CompilerServices;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 namespace LibraryApp.Data.Models;
 
-public interface ISeachable<TDocument> where TDocument : IDocument
+public interface ISearchable<TDocument> where TDocument : IDocument
 {
     static abstract FilterDefinition<TDocument> SearchFilter(string term);
 } 
@@ -31,5 +32,16 @@ public class BsonCollectionAttribute : Attribute
     public BsonCollectionAttribute(string collectionName)
     {
         CollectionName = collectionName;
+    }
+}
+
+[AttributeUsage(AttributeTargets.Property)]
+public class DocumentSearchAttribute : Attribute
+{
+    public string? AttributeName { get; }
+
+    public DocumentSearchAttribute([CallerMemberName] string? propertyName = null)
+    {
+        AttributeName = propertyName;
     }
 }

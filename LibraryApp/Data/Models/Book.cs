@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
@@ -6,17 +7,21 @@ using MongoDB.Driver;
 namespace LibraryApp.Data.Models;
 
 [BsonCollection("Book")]
-public record Book : Document, ISeachable<Book>
+public record Book : Document, ISearchable<Book>
 {
     public override ObjectId Id { get; set; }
     public override DateTime CreatedAt { get; init; }
 
     public List<String> Tags { get; set; } = new List<string>();
+    
+    [DocumentSearch]
     public string Name { get; set; } = String.Empty;
     public string AltName { get; set; } = String.Empty;
+    [DocumentSearch]
     public string Description { get; set; } = String.Empty;
     public DateTime Released { get; init; }
     public string ISBN { get; init; } = String.Empty;
+    [DocumentSearch]
     public string Publisher { get; set; } = String.Empty;
     public uint Copies { get; set; } = 0;
     public uint Pages { get; set; } = 0;
@@ -26,6 +31,9 @@ public record Book : Document, ISeachable<Book>
     
     public static FilterDefinition<Book> SearchFilter(string term)
     {
+        var searchProps = typeof(Book).GetProperties()
+            .Select(prop => prop.GetCustomAttributes(typeof(DocumentSearchAttribute), false)).ToList();
+            
         var nameField = new ExpressionFieldDefinition<Book, string>(book => book.Name);
         var authorField = new ExpressionFieldDefinition<Book, string>(book => book.Author.Name);
 

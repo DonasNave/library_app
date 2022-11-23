@@ -24,38 +24,25 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
             .FirstOrDefault())?.CollectionName;
     }
 
-    public virtual IQueryable<TDocument> AsQueryable()
-    {
-        return _collection.AsQueryable();
-    }
+    public virtual IQueryable<TDocument> AsQueryable() 
+        => _collection.AsQueryable();
 
-    public virtual IEnumerable<TDocument> FilterBy(
-        Expression<Func<TDocument, bool>> filterExpression)
-    {
-        return _collection.Find(filterExpression).ToEnumerable();
-    }
+    public virtual IEnumerable<TDocument> FilterBy(Expression<Func<TDocument, bool>> filterExpression) 
+        => _collection.Find(filterExpression).ToEnumerable();
 
     public IEnumerable<TDocument> FilterBy(FilterDefinition<TDocument> filterDefinition)
-    {
-        return _collection.Find(filterDefinition).ToEnumerable();
-    }
+        => _collection.Find(filterDefinition).ToEnumerable();
 
     public virtual IEnumerable<TProjected> FilterBy<TProjected>(
         Expression<Func<TDocument, bool>> filterExpression,
         Expression<Func<TDocument, TProjected>> projectionExpression)
-    {
-        return _collection.Find(filterExpression).Project(projectionExpression).ToEnumerable();
-    }
+            => _collection.Find(filterExpression).Project(projectionExpression).ToEnumerable();
 
     public virtual TDocument FindOne(Expression<Func<TDocument, bool>> filterExpression)
-    {
-        return _collection.Find(filterExpression).FirstOrDefault();
-    }
+        => _collection.Find(filterExpression).FirstOrDefault();
 
     public virtual Task<TDocument> FindOneAsync(Expression<Func<TDocument, bool>> filterExpression)
-    {
-        return Task.Run(() => _collection.Find(filterExpression).FirstOrDefaultAsync());
-    }
+        => Task.Run(() => _collection.Find(filterExpression).FirstOrDefaultAsync());
 
     public virtual TDocument FindById(string id)
     {
@@ -74,27 +61,17 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         });
     }
 
-
     public virtual void InsertOne(TDocument document)
-    {
-        _collection.InsertOne(document);
-    }
+        => _collection.InsertOne(document);
 
     public virtual Task InsertOneAsync(TDocument document)
-    {
-        return Task.Run(() => _collection.InsertOneAsync(document));
-    }
+        => Task.Run(() => _collection.InsertOneAsync(document));
 
     public void InsertMany(ICollection<TDocument> documents)
-    {
-        _collection.InsertMany(documents);
-    }
-
+        => _collection.InsertMany(documents);
 
     public virtual async Task InsertManyAsync(ICollection<TDocument> documents)
-    {
-        await _collection.InsertManyAsync(documents);
-    }
+        => await _collection.InsertManyAsync(documents);
 
     public void ReplaceOne(TDocument document)
     {
@@ -109,14 +86,10 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
     }
 
     public void DeleteOne(Expression<Func<TDocument, bool>> filterExpression)
-    {
-        _collection.FindOneAndDelete(filterExpression);
-    }
+        => _collection.FindOneAndDelete(filterExpression);
 
     public Task DeleteOneAsync(Expression<Func<TDocument, bool>> filterExpression)
-    {
-        return Task.Run(() => _collection.FindOneAndDeleteAsync(filterExpression));
-    }
+        => Task.Run(() => _collection.FindOneAndDeleteAsync(filterExpression));
 
     public void DeleteById(string id)
     {
@@ -136,12 +109,8 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
     }
 
     public void DeleteMany(Expression<Func<TDocument, bool>> filterExpression)
-    {
-        _collection.DeleteMany(filterExpression);
-    }
+        => _collection.DeleteMany(filterExpression);
 
     public Task DeleteManyAsync(Expression<Func<TDocument, bool>> filterExpression)
-    {
-        return Task.Run(() => _collection.DeleteManyAsync(filterExpression));
-    }
+        => Task.Run(() => _collection.DeleteManyAsync(filterExpression));
 }
