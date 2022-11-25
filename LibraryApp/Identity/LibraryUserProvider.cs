@@ -1,16 +1,18 @@
 using LibraryApp.Data;
 using LibraryApp.Data.Models;
-using MongoDB.Driver;
+using Microsoft.AspNetCore.Identity;
 
 namespace LibraryApp.Identity;
 
 public class LibraryUserProvider
 {
     private readonly IMongoRepository<LibraryUser> _libUsersRepository;
+    private readonly PasswordHasher<LibraryUser> _passwordHasher;
 
-    public LibraryUserProvider(IMongoRepository<LibraryUser> libUsersRepository)
+    public LibraryUserProvider(IMongoRepository<LibraryUser> libUsersRepository, PasswordHasher<LibraryUser> passwordHasher)
     {
         _libUsersRepository = libUsersRepository;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<LibraryUser?> GetUser(string userName)
@@ -33,8 +35,9 @@ public class LibraryUserProvider
         {
             UserName = userName,
             Role = UserRole.Customer,
-            PasswordHash = password
         };
+        
+        newUser.PasswordHash = _passwordHasher.HashPassword(newUser, password);
         
         try
         {
@@ -46,4 +49,7 @@ public class LibraryUserProvider
             return null;
         }
     }
+
+    public PasswordVerificationResult VerifyPassword(LibraryUser user, string password) =>
+        _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
 }

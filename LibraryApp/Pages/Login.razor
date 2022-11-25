@@ -1,6 +1,7 @@
 @page "/login"
 
 @using LibraryApp.Identity
+@using Microsoft.AspNetCore.Identity
 
 @inject LibraryUserProvider LibraryUserProvider
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -42,7 +43,8 @@
     private async Task Authenticate()
     {
         var userAcc = await LibraryUserProvider.GetUser(_model.UserName);
-        if (userAcc is null || userAcc.PasswordHash != _model.UserPass)
+        if (userAcc is null || 
+            LibraryUserProvider.VerifyPassword(userAcc, _model.UserPass) == PasswordVerificationResult.Failed)
         {
             await Js.InvokeVoidAsync("alert", "Invalid username or password");
             return;

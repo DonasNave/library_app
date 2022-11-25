@@ -2,7 +2,9 @@ using LibraryApp.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using LibraryApp.Identity;
 using LibraryApp.Data.Migrations;
+using LibraryApp.Data.Models;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +25,7 @@ builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<AuthenticationStateProvider, LibAuthenticationStateProvider>();
 builder.Services.AddSingleton<LibraryUserProvider>();
 builder.Services.AddSingleton<Migrator>();
+builder.Services.AddSingleton<PasswordHasher<LibraryUser>>();
 
 var app = builder.Build();
 

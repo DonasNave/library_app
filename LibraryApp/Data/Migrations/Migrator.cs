@@ -1,4 +1,5 @@
 using LibraryApp.Data.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace LibraryApp.Data.Migrations;
 
@@ -74,12 +75,19 @@ public class Migrator
 
     private readonly IMongoRepository<LibraryUser> _libUsersRepository;
     private readonly IMongoRepository<Book> _booksRepository;
+    private readonly PasswordHasher<LibraryUser> _passwordHasher;
 
     public Migrator(IMongoRepository<LibraryUser> libUsersRepository, 
-                    IMongoRepository<Book> booksRepository )
+                    IMongoRepository<Book> booksRepository, PasswordHasher<LibraryUser> passwordHasher )
     {
         _libUsersRepository = libUsersRepository;
         _booksRepository = booksRepository;
+        _passwordHasher = passwordHasher;
+
+        foreach (var user in _dummyUsers)
+        {
+            user.PasswordHash = _passwordHasher.HashPassword(user, user.PasswordHash);
+        }
     }
 
 
