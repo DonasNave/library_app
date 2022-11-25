@@ -4,7 +4,7 @@ using MongoDB.Driver;
 
 namespace LibraryApp.Data;
 
-public interface IMongoRepository<TDocument> where TDocument : IDocument
+public interface IMongoRepository<TDocument> where TDocument : IDocument, ISearchable<TDocument>
 {
     IQueryable<TDocument> AsQueryable();
 
@@ -17,6 +17,14 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument
     IEnumerable<TProjected> FilterBy<TProjected>(
         Expression<Func<TDocument, bool>> filterExpression,
         Expression<Func<TDocument, TProjected>> projectionExpression);
+
+    Task<IAsyncCursor<TDocument>> FilterByAsync(Expression<Func<TDocument, bool>> filterExpression);
+    
+    Task<IAsyncCursor<TDocument>> FilterByAsync(FilterDefinition<TDocument> filterDefinition);
+
+    IEnumerable<TDocument> SearchFor(string term);
+    
+    Task<IAsyncCursor<TDocument>> SearchForAsync(string term);
 
     TDocument FindOne(Expression<Func<TDocument, bool>> filterExpression);
 

@@ -37,7 +37,7 @@ else
     {
         if (SearchInput?.Length > 2)
         {
-            _books = MongoRepository.FilterBy(Book.SearchFilter(SearchInput));
+            _books = MongoRepository.SearchFor(SearchInput);
         }                                                                                 
         await Task.Run(() => null);
     }
