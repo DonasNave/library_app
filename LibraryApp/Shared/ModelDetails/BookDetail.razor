@@ -1,0 +1,22 @@
+@using LibraryApp.Data.Models
+@using MongoDB.Bson
+
+<div>
+    <h3>DocumentDetail of @BookId</h3>
+</div>
+
+@code {
+
+    [Parameter]
+    public ObjectId BookId { get; set; }
+
+    private void SaveData()
+    {
+    }
+
+    protected override Task<bool> OnInitializedAsync()
+    {
+        
+        return Task.Run(() => false);
+    }
+}

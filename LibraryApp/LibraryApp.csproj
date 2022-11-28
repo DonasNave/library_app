@@ -25,7 +25,6 @@
     <ItemGroup>
       <Folder Include="Pages\Products\Details" />
       <Folder Include="Pages\Products\Overviews" />
-      <Folder Include="Shared\ModelDetails" />
     </ItemGroup>
 
 
