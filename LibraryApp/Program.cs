@@ -6,26 +6,31 @@ using LibraryApp.Data.Models;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
+services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
 
-builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
-
-builder.Services.AddSingleton<IMongoDbSettings>(serviceProvider =>
+services.AddSingleton<IMongoDbSettings>(serviceProvider =>
     serviceProvider.GetRequiredService<IOptions<MongoDbSettings>>().Value);
 
-builder.Services.AddSingleton(typeof(IMongoRepository<>), typeof(MongoRepository<>));
+services.AddSingleton(typeof(IMongoRepository<>), typeof(MongoRepository<>));
 
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddAuthenticationCore();
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
-builder.Services.AddScoped<ProtectedSessionStorage>();
-builder.Services.AddScoped<AuthenticationStateProvider, LibAuthenticationStateProvider>();
-builder.Services.AddSingleton<LibraryUserProvider>();
-builder.Services.AddSingleton<Migrator>();
-builder.Services.AddSingleton<PasswordHasher<LibraryUser>>();
+services.AddDatabaseDeveloperPageExceptionFilter();
+services.AddAuthenticationCore();
+services.AddRazorPages();
+services.AddServerSideBlazor(); 
+services.AddScoped<DialogService>();
+services.AddScoped<NotificationService>();
+services.AddScoped<TooltipService>();
+services.AddScoped<ContextMenuService>();
+services.AddScoped<ProtectedSessionStorage>();
+services.AddScoped<AuthenticationStateProvider, LibAuthenticationStateProvider>();
+services.AddSingleton<LibraryUserProvider>();
+services.AddSingleton<Migrator>();
+services.AddSingleton<PasswordHasher<LibraryUser>>();
 
 var app = builder.Build();
 
