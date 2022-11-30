@@ -27,8 +27,8 @@ public record Book : Document, ISearchable<Book>, IFormable
     public string Publisher { get; set; } = String.Empty;
     public uint Copies { get; set; } = 0;
     public uint Pages { get; set; } = 0;
-    public byte[] ImageCover { get; set; } = new byte[] { };
-    public byte[] ImageFront { get; set; } = new byte[] { };
+    public Image ImageCover { get; set; } = new();
+    public Image ImageFront { get; set; } = new();
     public Author Author { get; init; }
     
     public static FilterDefinition<Book> SearchFilter(string term)
@@ -69,4 +69,11 @@ public class Author
     public string Name { get; set; }
     public DateTime Birth { get; set; }
     public List<String> BooksWritten { get; set; }
+}
+
+public class Image
+{
+    public string Data;
+    public int Size;
+    public string Name;
 }

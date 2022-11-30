@@ -1,22 +1,184 @@
 @using LibraryApp.Data.Models
 @using MongoDB.Bson
+@using LibraryApp.Data
+@inject IMongoRepository<Book> BookRepo
 
-<div>
-    <h3>DocumentDetail of @BookId</h3>
-</div>
+
+@if (Book == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <RadzenTemplateForm Data="Book" Submit="@((Book args) => { SaveData(args); })">
+    <div class="container-fluid">
+        <!-- Book Info -->
+        <div class="row">
+            <div class="col-md-6">
+                <RadzenFieldset Text="Book Info">
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="Name:" />
+                        </div>
+                        <div class="col-md-8">
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="identityState">
+                                    <RadzenTextBox style="width: 100%;" Name="Name" @bind-Value="Book.Name"/>
+                                </Authorized>
+                                <NotAuthorized Context="identityState">
+                                    <RadzenText>@Book.Name</RadzenText>
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </div>
+                    </div><!-- Name -->
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="Altname:" />
+                        </div>
+                        <div class="col-md-8">
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="identityState">
+                                    <RadzenTextBox style="width: 100%;" Name="Altname" @bind-Value="Book.AltName"/>
+                                </Authorized>
+                                <NotAuthorized Context="identityState">
+                                    <RadzenText>@Book.AltName</RadzenText>
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </div>
+                    </div><!-- AltName -->
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="Description:" />
+                        </div>
+                        <div class="col-md-8">
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="identityState">
+                                    <RadzenTextArea Name="Description" @bind-Value="Book.Description" Class="w-100" />
+                                </Authorized>
+                                <NotAuthorized Context="identityState">
+                                    <RadzenText>@Book.Description</RadzenText>
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </div>
+                    </div><!-- Description -->
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="Released:" />
+                        </div>
+                        <div class="col-md-8">
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="identityState">
+                                    <RadzenDatePicker @bind-Value=@Book.Released DateFormat="d" Class="w-100" />
+                                </Authorized>
+                                <NotAuthorized Context="identityState">
+                                    <RadzenText>@Book.Released</RadzenText>
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </div>
+                    </div><!-- Released -->
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="Pages:" />
+                        </div>
+                        <div class="col-md-8">
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="identityState">
+                                    <RadzenNumeric TValue="uint" Min="0" @bind-Value="Book.Pages" Class="w-100"/>
+                                </Authorized>
+                                <NotAuthorized Context="identityState">
+                                    <RadzenText>@Book.Pages</RadzenText>
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </div>
+                    </div><!-- Pages -->
+                    <div class="row">
+                        <div class="col-md-4 align-items-center d-flex">
+                            <RadzenLabel Text="Copies:" />
+                        </div>
+                        <div class="col-md-8">
+                            <AuthorizeView Roles="Admin">
+                                <Authorized Context="identityState">
+                                    <RadzenNumeric TValue="uint" Min="0" @bind-Value="Book.Copies" Class="w-100"/>
+                                </Authorized>
+                                <NotAuthorized Context="identityState">
+                                    <RadzenText>@Book.Copies</RadzenText>
+                                </NotAuthorized>
+                            </AuthorizeView>
+                        </div>
+                    </div><!-- Copies -->
+                </RadzenFieldset>
+            </div>
+            <div class="col-md-6">
+                <RadzenFieldset Text="Book Pictures">
+                    <RadzenCard>
+                        <h4 class="mb-4">Front: </h4>
+                        <RadzenUpload Multiple="true" Url="upload/single" Accept="image/*" Complete=@(args => OnUpload(args)) class="w-100" />
+                    </RadzenCard>
+                    <RadzenCard>
+                        <h4 class="mb-4">Back: </h4>
+                        <RadzenUpload Multiple="true" Url="upload/single" Accept="image/*" Complete=@(args => OnUpload(args)) class="w-100" />
+                    </RadzenCard>
+                </RadzenFieldset>
+            </div>
+        </div>
+        <!-- Book Images -->
+        <div class="row">
+            <div class="col-md-12">
+                <RadzenFieldset Text="Author Info">
+                <AuthorizeView Roles="Admin">
+                    <Authorized Context="identityState">
+                        <RadzenTextBox style="width: 100%;" Name="AuthorName" @bind-Value="Author.Name"/>
+                    </Authorized>
+                    <NotAuthorized Context="identityState">
+                        <RadzenText>@Author.Name</RadzenText>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </RadzenFieldset>
+            </div>
+        </div>
+        <!-- Author Info -->
+        <div class="row justify-content-center">
+            <div class="col-md-12 d-flex align-items-end justify-content-center" style="margin-top: 16px;">
+                <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Save"/>
+                <RadzenButton ButtonStyle="ButtonStyle.Light" Icon="cancel" style="display: inline-block; margin-left: 10px;" Text="Cancel" Click="@Cancel"/>
+            </div>
+        </div>
+    </div>
+    </RadzenTemplateForm>
+}
 
 @code {
 
     [Parameter]
     public ObjectId BookId { get; set; }
 
-    private void SaveData()
+    private Book Book { get; set; } = new();
+
+    public Image ImageFront { get; set; } = new();
+    
+    public Image ImageCover { get; set; } = new();
+
+    private Author Author { get; set; } = new();
+
+    private void SaveData(Book book) => 
+        BookRepo.ReplaceOne(Book);
+
+    private void Cancel()
     {
+        
+    }
+
+    private void OnUpload(UploadCompleteEventArgs args)
+    {
+        _ = args.JsonResponse;
     }
 
     protected override Task<bool> OnInitializedAsync()
     {
-        
+        Book = BookRepo.FindById(BookId);
+        Author = Book.Author;
+        ImageFront = Book.ImageFront;
+        ImageCover = Book.ImageCover;
         return Task.Run(() => false);
     }
 }

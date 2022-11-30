@@ -62,6 +62,12 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, objectId);
         return _collection.Find(filter).SingleOrDefault();
     }
+    
+    public TDocument FindById(ObjectId id)
+    {
+        var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, id);
+        return _collection.Find(filter).SingleOrDefault();
+    }
 
     public Task<TDocument> FindByIdAsync(string id)
     {

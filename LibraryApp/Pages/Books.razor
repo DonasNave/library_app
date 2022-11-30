@@ -45,7 +45,7 @@ else
                 <Authorized>
                     <RadzenDataGridColumn TItem="Book" Property="Edit" Filterable="false" Sortable="false" Title="" Width="90px">
                         <Template Context="data">
-                            <RadzenButton ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter" Icon="edit" Class="m-1" Click=@(() => Task.Run(()=> true)) Text="Edit" />
+                            <RadzenButton ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter" Icon="edit" Class="m-1" Click=@(() => OpenBook(data.Id))  Text="Edit" />
                         </Template>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="Book" Property="Delete" Filterable="false" Sortable="false" Title="" Width="90px">
@@ -90,7 +90,7 @@ else
     {
         await DialogService.OpenAsync<BookDetail>($"Book",
             new Dictionary<string, object>() { { "BookId", bookId } },
-            new DialogOptions() { Width = "700px", Height = "520px" });
+            new DialogOptions() { Width = "800px", Height = "700px" });
     }
     
     protected override Task<bool> OnInitializedAsync()

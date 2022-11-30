@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using LibraryApp.Data.Models;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace LibraryApp.Data;
@@ -31,6 +32,8 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument, ISearc
     Task<TDocument> FindOneAsync(Expression<Func<TDocument, bool>> filterExpression);
 
     TDocument FindById(string id);
+    
+    TDocument FindById(ObjectId id);
 
     Task<TDocument> FindByIdAsync(string id);
 
