@@ -109,31 +109,32 @@ else
                 </RadzenFieldset>
             </div>
             <div class="col-md-6">
-                <RadzenFieldset Text="Book Pictures">
-                    <RadzenCard>
-                        <h4 class="mb-4">Front: </h4>
-                        <RadzenUpload Multiple="true" Url="upload/single" Accept="image/*" Complete=@(args => OnUpload(args)) class="w-100" />
-                    </RadzenCard>
-                    <RadzenCard>
-                        <h4 class="mb-4">Back: </h4>
-                        <RadzenUpload Multiple="true" Url="upload/single" Accept="image/*" Complete=@(args => OnUpload(args)) class="w-100" />
-                    </RadzenCard>
+                <RadzenFieldset Text="Author Info">
+                    <AuthorizeView Roles="Admin">
+                        <Authorized Context="identityState">
+                            <RadzenTextBox style="width: 100%;" Name="AuthorName" @bind-Value="Author.Name"/>
+                        </Authorized>
+                        <NotAuthorized Context="identityState">
+                            <RadzenText>@Author.Name</RadzenText>
+                        </NotAuthorized>
+                    </AuthorizeView>
                 </RadzenFieldset>
             </div>
         </div>
         <!-- Book Images -->
         <div class="row">
             <div class="col-md-12">
-                <RadzenFieldset Text="Author Info">
-                <AuthorizeView Roles="Admin">
-                    <Authorized Context="identityState">
-                        <RadzenTextBox style="width: 100%;" Name="AuthorName" @bind-Value="Author.Name"/>
-                    </Authorized>
-                    <NotAuthorized Context="identityState">
-                        <RadzenText>@Author.Name</RadzenText>
-                    </NotAuthorized>
-                </AuthorizeView>
-            </RadzenFieldset>
+                <RadzenFieldset Text="Book Pictures">
+                    <RadzenCard>
+                        <h4 class="mb-4">Front: </h4>
+                        <RadzenFileInput @bind-Value="ImageFront.Data" TValue="string" class="w-100" />
+                    </RadzenCard>
+                    <RadzenCard>
+                        <h4 class="mb-4">Back: </h4>
+                        <RadzenFileInput @bind-Value="ImageCover.Data" TValue="string" class="w-100" />
+                    </RadzenCard>
+                    <RadzenText>@ProgressInfo</RadzenText>
+                </RadzenFieldset>
             </div>
         </div>
         <!-- Author Info -->
@@ -154,24 +155,30 @@ else
 
     private Book Book { get; set; } = new();
 
-    public Image ImageFront { get; set; } = new();
-    
-    public Image ImageCover { get; set; } = new();
+    private Image ImageFront { get; set; } = new();
+
+    private Image ImageCover { get; set; } = new();
 
     private Author Author { get; set; } = new();
 
-    private void SaveData(Book book) => 
-        BookRepo.ReplaceOne(Book);
+    private string ProgressInfo { get; set; } = String.Empty;
+
+    private void SaveData(Book book)
+    {
+        book.Author = Author;
+        book.ImageCover = ImageCover;
+        book.ImageFront = ImageFront;
+        BookRepo.ReplaceOne(book);
+    }
 
     private void Cancel()
     {
         
     }
 
-    private void OnUpload(UploadCompleteEventArgs args)
-    {
-        _ = args.JsonResponse;
-    }
+    private void OnProgress(UploadProgressArgs args) => ProgressInfo = $"Uploading {args.Progress}%";
+
+    private void OnUpload(UploadCompleteEventArgs _) => ProgressInfo = String.Empty;
 
     protected override Task<bool> OnInitializedAsync()
     {

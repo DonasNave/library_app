@@ -2,22 +2,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryApp.Controllers;
 
-public interface IDownload
+public interface IDownloadController
 {
     IActionResult Single(string FileName);
 }
 
-[Route("api/[controller]")]
-[ApiController]
-public class Download : Controller, IDownload
+public class DownloadControllerController : Controller, IDownloadController
 {
     private readonly IWebHostEnvironment _environment;
-    public Download(IWebHostEnvironment environment)
+    public DownloadControllerController(IWebHostEnvironment environment)
     {
         this._environment = environment;
     }
 
-    [HttpGet("[action]")]
+    [HttpGet("download/single")]
     public IActionResult Single(string FileName)
     {
         string path = Path.Combine(
