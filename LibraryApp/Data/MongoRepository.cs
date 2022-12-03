@@ -18,30 +18,29 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
 
     private protected string GetCollectionName(Type documentType)
     {
-        return ((BsonCollectionAttribute) documentType.GetCustomAttributes(
+        return (documentType.GetCustomAttributes(
                 typeof(BsonCollectionAttribute),
-                true)
-            .FirstOrDefault())?.CollectionName;
+                true)?.FirstOrDefault() as BsonCollectionAttribute)?.CollectionName ?? String.Empty;
     }
 
-    public IQueryable<TDocument> AsQueryable() 
+    public IQueryable<TDocument> AsQueryable()
         => _collection.AsQueryable();
 
-    public IEnumerable<TDocument> FilterBy(Expression<Func<TDocument, bool>> filterExpression) 
+    public IEnumerable<TDocument> FilterBy(Expression<Func<TDocument, bool>> filterExpression)
         => _collection.Find(filterExpression).ToEnumerable();
 
     public IEnumerable<TDocument> FilterBy(FilterDefinition<TDocument> filterDefinition)
         => _collection.Find(filterDefinition).ToEnumerable();
-    
-    public async Task<IAsyncCursor<TDocument>> FilterByAsync(Expression<Func<TDocument, bool>> filterExpression) 
+
+    public async Task<IAsyncCursor<TDocument>> FilterByAsync(Expression<Func<TDocument, bool>> filterExpression)
         => await _collection.FindAsync(filterExpression);
 
     public async Task<IAsyncCursor<TDocument>> FilterByAsync(FilterDefinition<TDocument> filterDefinition)
         => await _collection.FindAsync(filterDefinition);
-    
+
     public IEnumerable<TDocument> SearchFor(string term)
         => _collection.Find(TDocument.SearchFilter(term)).ToEnumerable();
-    
+
     public async Task<IAsyncCursor<TDocument>> SearchForAsync(string term)
         => await _collection.FindAsync(TDocument.SearchFilter(term));
 
@@ -62,7 +61,7 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, objectId);
         return _collection.Find(filter).SingleOrDefault();
     }
-    
+
     public TDocument FindById(ObjectId id)
     {
         var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, id);
@@ -109,19 +108,17 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
     public Task DeleteOneAsync(Expression<Func<TDocument, bool>> filterExpression)
         => Task.Run(() => _collection.FindOneAndDeleteAsync(filterExpression));
 
-    public void DeleteById(string id)
+    public void DeleteById(ObjectId id)
     {
-        var objectId = new ObjectId(id);
-        var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, objectId);
+        var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, id);
         _collection.FindOneAndDelete(filter);
     }
 
-    public Task DeleteByIdAsync(string id)
+    public Task DeleteByIdAsync(ObjectId id)
     {
         return Task.Run(() =>
         {
-            var objectId = new ObjectId(id);
-            var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, objectId);
+            var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, id);
             _collection.FindOneAndDeleteAsync(filter);
         });
     }

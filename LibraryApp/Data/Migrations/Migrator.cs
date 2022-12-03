@@ -11,52 +11,17 @@ public class Migrator
     {
         new()
         {
-            Author = new (){ Name="Bonifác Arnošt", Birth = DateTime.Now.AddYears(-55), BooksWritten = new (){"O čem spím"}},
-            Tags = new(){"adventure", "drama"}, Name = "O čem spím", AltName = "Nic moc", Copies = 5,
-            Description = "Fakt zajímavý dílo se mi zdá.", Released = DateTime.Now, ISBN = "null", Publisher = "Černá hora spol."
+            Author = new (){ Name="Tim of Books", Birth = DateTime.Now.AddYears(-55), BooksWritten = new (){"O čem spím"}},
+            Tags = new(){"adventure", "drama"}, Name = "O čem spím", AltName = "Nic moc", Copies = 5, Pages = 321,
+            Description = "Truly magnificent work of literature.", Released = DateTime.Now, ISBN = "null", Publisher = "Blackrock com."
         },
         new()
         {
-            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
-            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
-            
-        },
-        new()
-        {
-            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
-            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
-            
-        },
-        new()
-        {
-            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
-            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
-            
-        },
-        new()
-        {
-            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
-            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
-            
-        },
-        new()
-        {
-            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
-            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
-            
-        },
-        new()
-        {
-            Author = new (){ Name="Jarda Frantů", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Vlna"}}, 
-            Tags = new(){"sci-fi", "drama"}, Name = "Vlna", AltName = "Spicy", Description = "Fantasy o obchodnících s vlnou.", 
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Černá hora spol.", Copies = 6,
-            
-        },
+            Author = new (){ Name="Hubert Reed", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Wool"}},
+            Tags = new(){"sci-fi", "drama"}, Name = "Wool", AltName = "Spicy", Description = "Fantasy about wool sellers.",
+            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Blackrock com.", Copies = 6, Pages = 245,
+
+        }
     };
 
     private readonly ICollection<LibraryUser> _dummyUsers = new List<LibraryUser>()
@@ -79,8 +44,8 @@ public class Migrator
     private readonly IMongoRepository<Book> _booksRepository;
     private readonly PasswordHasher<LibraryUser> _passwordHasher;
 
-    public Migrator(IMongoRepository<LibraryUser> libUsersRepository, 
-                    IMongoRepository<Book> booksRepository, PasswordHasher<LibraryUser> passwordHasher )
+    public Migrator(IMongoRepository<LibraryUser> libUsersRepository,
+                    IMongoRepository<Book> booksRepository, PasswordHasher<LibraryUser> passwordHasher)
     {
         _libUsersRepository = libUsersRepository;
         _booksRepository = booksRepository;
@@ -100,7 +65,7 @@ public class Migrator
         try
         {
             _booksRepository.DeleteMany(book => true);
-            _booksRepository.InsertMany( _dummyBooks);
+            _booksRepository.InsertMany(_dummyBooks);
         }
         catch (Exception)
         {
@@ -114,7 +79,7 @@ public class Migrator
         try
         {
             _libUsersRepository.DeleteMany(user => true);
-            _libUsersRepository.InsertMany( _dummyUsers);
+            _libUsersRepository.InsertMany(_dummyUsers);
         }
         catch (Exception)
         {

@@ -17,30 +17,19 @@ public record LibraryUser : Document, ISearchable<LibraryUser>
     public override DateTime CreatedAt { get; init; }
     public UserRole Role { get; set; } = UserRole.Anonymous;
     public string UserName { get; set; } = String.Empty;
-    
+    public bool Active { get; set; } = false;
     public string Name { get; set; } = String.Empty;
     public string Surname { get; set; } = String.Empty;
     public string PasswordHash { get; set; } = String.Empty;
-    public List<BookBorrow> Borrows { get; set; }
-    public List<Notification> Notifications { get; set; }
+    public List<Assignment> Assignments { get; set; } = new();
     public static FilterDefinition<LibraryUser> SearchFilter(string searchTerm)
     {
         throw new NotImplementedException();
-    }                                                                
+    }
 }
-
-public class BookBorrow
+public class Assignment
 {
-    public string Id { get; init; }
-    public string Name { get; init; }
-    public string Author { get; init; }
-    public DateTime BorrowedAt { get; init; }
-    public int Coppies { get; init; }
-}
-
-public class Notification
-{
-    public string Id { get; init; }
+    public string Id { get; init; } = String.Empty;
     public DateTime Created { get; init; }
-    public string Message { get; set; }
+    public string Message { get; set; } = String.Empty;
 }

@@ -11,7 +11,7 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument, ISearc
 
     IEnumerable<TDocument> FilterBy(
         Expression<Func<TDocument, bool>> filterExpression);
-    
+
     IEnumerable<TDocument> FilterBy(
         FilterDefinition<TDocument> filterDefinition);
 
@@ -20,11 +20,11 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument, ISearc
         Expression<Func<TDocument, TProjected>> projectionExpression);
 
     Task<IAsyncCursor<TDocument>> FilterByAsync(Expression<Func<TDocument, bool>> filterExpression);
-    
+
     Task<IAsyncCursor<TDocument>> FilterByAsync(FilterDefinition<TDocument> filterDefinition);
 
     IEnumerable<TDocument> SearchFor(string term);
-    
+
     Task<IAsyncCursor<TDocument>> SearchForAsync(string term);
 
     TDocument FindOne(Expression<Func<TDocument, bool>> filterExpression);
@@ -32,7 +32,7 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument, ISearc
     Task<TDocument> FindOneAsync(Expression<Func<TDocument, bool>> filterExpression);
 
     TDocument FindById(string id);
-    
+
     TDocument FindById(ObjectId id);
 
     Task<TDocument> FindByIdAsync(string id);
@@ -53,9 +53,9 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument, ISearc
 
     Task DeleteOneAsync(Expression<Func<TDocument, bool>> filterExpression);
 
-    void DeleteById(string id);
+    void DeleteById(ObjectId id);
 
-    Task DeleteByIdAsync(string id);
+    Task DeleteByIdAsync(ObjectId id);
 
     void DeleteMany(Expression<Func<TDocument, bool>> filterExpression);
 

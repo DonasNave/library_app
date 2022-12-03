@@ -21,7 +21,7 @@ services.AddSingleton(typeof(IMongoRepository<>), typeof(MongoRepository<>));
 services.AddDatabaseDeveloperPageExceptionFilter();
 services.AddAuthenticationCore();
 services.AddRazorPages();
-services.AddServerSideBlazor(); 
+services.AddServerSideBlazor();
 services.AddScoped<DialogService>();
 services.AddScoped<NotificationService>();
 services.AddScoped<TooltipService>();
@@ -55,11 +55,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers();
-    endpoints.MapBlazorHub();
-    endpoints.MapFallbackToPage("/_Host");
-});
+app.MapControllers();
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
 
 app.Run();

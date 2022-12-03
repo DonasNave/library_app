@@ -26,62 +26,49 @@
 }
 else
 {
-    <SearchBar BookLink="MongoRepository"></SearchBar>
-
     <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false"
     FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true"
     PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" Data="@_books" TItem="Book" ColumnWidth="300px"
     LogicalFilterOperator="LogicalFilterOperator.Or">
-        <Columns>
-            <RadzenDataGridColumn TItem="Book" Property="Name" Filterable="false" Title="Name" Frozen="true" Width="100px"
+    <Columns>
+        <RadzenDataGridColumn TItem="Book" Property="Name" Filterable="false" Title="Name" Frozen="true" Width="100px"
             TextAlign="TextAlign.Center" />
-            @* <RadzenDataGridColumn TItem="Employee" Title="Photo" Frozen="true" Sortable="false" Filterable="false"
-                Width="80px" TextAlign="TextAlign.Center" > *@
-            @* <Template Context="data"> *@
-            @* <RadzenImage Path="@data.Photo" class="rz-gravatar" /> *@
-            @* </Template> *@
-            @* </RadzenDataGridColumn> *@
-            <RadzenDataGridColumn TItem="Book" Property="AltName" Title="Alternative name" Frozen="true" Width="100px" />
-            <RadzenDataGridColumn TItem="Book" Property="Description" Title="Last Name" Width="200px" />
-            <RadzenDataGridColumn TItem="Book" Property="Released" FormatString="{0:d}" Title="Released" Width="90px" />
-            <RadzenDataGridColumn TItem="Book" Property="Pages" FormatString="{0:d}" Title="Pages" Width="80px" />
-            <AuthorizeView Roles="Admin">
-                <Authorized>
-                    <RadzenDataGridColumn TItem="Book" Property="Edit" Filterable="false" Sortable="false" Title=""
-                    Width="90px">
-                        <Template Context="data">
-                            <RadzenButton ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter"
-                            Icon="edit" Class="m-1" Click=@(() => OpenBook(data.Id)) Text="Edit" />
-                        </Template>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="Book" Property="Delete" Filterable="false" Sortable="false" Title=""
-                    Width="90px">
-                        <Template Context="data">
-                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter"
-                            Icon="delete" Class="m-1" Click=@(() => Task.Run(()=> true)) Text="Delete" />
-                        </Template>
-                    </RadzenDataGridColumn>
-                </Authorized>
-                <NotAuthorized>
-                    <RadzenDataGridColumn TItem="Book" Property="Info" Filterable="false" Sortable="false" Title=""
-                    Width="90px">
-                        <Template Context="data">
-                            <RadzenButton ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter"
-                            Icon="info" Class="m-1" Click=@(() => OpenBook(data.Id)) Text="Info" />
-                        </Template>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="Book" Property="Borrow" Filterable="false" Sortable="false" Title=""
-                    Width="90px">
-                        <Template Context="data">
-                            <RadzenButton ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Shade="Shade.Lighter"
-                            Icon="add" Class="m-1" Click=@(() => Task.Run(() => true)) Text="Borrow" />
-                        </Template>
-                    </RadzenDataGridColumn>
-                </NotAuthorized>
-            </AuthorizeView>
-
-        </Columns>
-    </RadzenDataGrid>
+        @* <RadzenDataGridColumn TItem="Employee" Title="Photo" Frozen="true" Sortable="false" Filterable="false"
+            Width="80px" TextAlign="TextAlign.Center" > *@
+        @* <Template Context="data"> *@
+        @* <RadzenImage Path="@data.Photo" class="rz-gravatar" /> *@
+        @* </Template> *@
+        @* </RadzenDataGridColumn> *@
+        <RadzenDataGridColumn TItem="Book" Property="AltName" Title="Alternative name" Frozen="true" Width="100px" />
+        <RadzenDataGridColumn TItem="Book" Property="Description" Title="Last Name" Width="200px" />
+        <RadzenDataGridColumn TItem="Book" Property="Released" FormatString="{0:d}" Title="Released" Width="90px" />
+        <RadzenDataGridColumn TItem="Book" Property="Pages" FormatString="{0:d}" Title="Pages" Width="80px" />
+        <AuthorizeView Roles="Customer">
+            <RadzenDataGridColumn TItem="Book" Property="Borrow" Filterable="false" Sortable="false" Title=""
+                Width="90px">
+                <Template Context="data">
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Shade="Shade.Lighter"
+                        Icon="add" Class="m-1" Click=@(() => BorrowBook(data.Id)) Text="Borrow" />
+                </Template>
+            </RadzenDataGridColumn>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin">
+            <RadzenDataGridColumn TItem="Book" Property="Delete" Filterable="false" Sortable="false" Title=""
+                Width="90px">
+                <Template Context="data">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter"
+                        Icon="delete" Class="m-1" Click=@(() => DeleteBook(data.Id)) Text="Delete" />
+                </Template>
+            </RadzenDataGridColumn>
+        </AuthorizeView>
+        <RadzenDataGridColumn TItem="Book" Property="Info" Filterable="false" Sortable="false" Title="" Width="90px">
+            <Template Context="data">
+                <RadzenButton ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter" Icon="info"
+                    Class="m-1" Click=@(() => OpenBook(data.Id)) Text="Info" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
 }
 
 @code {
@@ -98,6 +85,23 @@ else
         await Task.Run(() => null);
     }
 
+    private async Task DeleteBook(ObjectId bookId)
+    {
+        await MongoRepository.DeleteByIdAsync(bookId);
+        LoadBooks();
+    }
+
+    private async Task BorrowBook(ObjectId bookId)
+    {
+        //Descrease current books copies by one
+        //Save current book
+        //Create assignment of the book borrow for current User
+        //Save current user
+        //Create notification signaling book borrow
+        //Save said notification
+        Task.Run(() => null);
+    }
+
     async Task OpenBook(ObjectId bookId)
     {
         await DialogService.OpenAsync<BookDetail>($"Book",
@@ -107,7 +111,9 @@ else
 
     protected override Task<bool> OnInitializedAsync()
     {
-        _books = MongoRepository.FilterBy(book => true);
+        LoadBooks();
         return Task.Run(() => true);
     }
+
+    private void LoadBooks() => _books = MongoRepository.FilterBy(book => true);
 }

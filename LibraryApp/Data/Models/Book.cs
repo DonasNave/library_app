@@ -13,7 +13,7 @@ namespace LibraryApp.Data.Models;
     nameof(Name), nameof(AltName), nameof(Description), nameof(Released), nameof(ISBN),
     nameof(Publisher), nameof(Copies),
 })]
-public record Book : Document, ISearchable<Book>, IFormable
+public record Book : Document, ISearchable<Book>
 {
     public override ObjectId Id { get; set; }
     public override DateTime CreatedAt { get; init; }
@@ -29,7 +29,7 @@ public record Book : Document, ISearchable<Book>, IFormable
     public uint Pages { get; set; } = 0;
     public Image ImageCover { get; set; } = new();
     public Image ImageFront { get; set; } = new();
-    public Author Author { get; set; }
+    public Author Author { get; set; } = new();
 
     public static FilterDefinition<Book> SearchFilter(string term)
     {
@@ -45,35 +45,18 @@ public record Book : Document, ISearchable<Book>, IFormable
 
         return nameFilter | authorFilter | isbnFilter;
     }
-
-    public Dictionary<string, (object, Type)> FormAttributes()
-    {
-        var docForm = typeof(Book).GetCustomAttributes<DocumentFormAttribute>().FirstOrDefault();
-        var dict = new Dictionary<string, (object, Type)>();
-
-        if (docForm is not null)
-        {
-            foreach (var attr in docForm.AttributeNames)
-            {
-                var prop = GetType().GetProperty(attr);
-                dict[attr] = (prop.GetValue(this), prop.GetType());
-            }
-        }
-
-        return dict;
-    }
 }
 
 public class Author
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = String.Empty;
     public DateTime Birth { get; set; }
-    public List<String> BooksWritten { get; set; }
+    public List<String> BooksWritten { get; set; } = new();
 }
 
 public class Image
 {
-    public string Data;
+    public string Data { get; set; } = String.Empty;
     public int Size;
-    public string Name;
+    public string Name { get; set; } = String.Empty;
 }

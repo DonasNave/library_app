@@ -7,11 +7,13 @@ namespace LibraryApp.Identity;
 public class LibraryUserProvider
 {
     private readonly IMongoRepository<LibraryUser> _libUsersRepository;
+    private readonly IMongoRepository<Notification> _notificationsRepository;
     private readonly PasswordHasher<LibraryUser> _passwordHasher;
 
-    public LibraryUserProvider(IMongoRepository<LibraryUser> libUsersRepository, PasswordHasher<LibraryUser> passwordHasher)
+    public LibraryUserProvider(IMongoRepository<LibraryUser> libUsersRepository, IMongoRepository<Notification> notificationRepository, PasswordHasher<LibraryUser> passwordHasher)
     {
         _libUsersRepository = libUsersRepository;
+        _notificationsRepository = notificationRepository;
         _passwordHasher = passwordHasher;
     }
 
@@ -36,12 +38,23 @@ public class LibraryUserProvider
             UserName = userName,
             Role = UserRole.Customer,
         };
-        
+
         newUser.PasswordHash = _passwordHasher.HashPassword(newUser, password);
-        
+        var notifyRegister = new Notification()
+        {
+            Title = $"Confirm '{userName}' registration",
+            Action = NotificationAction.ConfirmRegistration,
+            Message = $"Decide wether to allow registration of '{userName}' to go through",
+            DueTo = DateTime.Now.AddDays(2),
+            Priority = 1
+        };
+
         try
         {
             await _libUsersRepository.InsertOneAsync(newUser);
+            var insertion = await GetUser(userName);
+            notifyRegister.RefId = insertion?.Id.ToString() ?? "unknown";
+            await _notificationsRepository.InsertOneAsync(notifyRegister);
             return newUser;
         }
         catch

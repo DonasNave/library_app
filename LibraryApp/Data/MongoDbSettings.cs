@@ -8,6 +8,6 @@ public interface IMongoDbSettings
 
 public class MongoDbSettings : IMongoDbSettings
 {
-    public string DatabaseName { get; set; }
-    public string ConnectionString { get; set; }
+    public string DatabaseName { get; set; } = String.Empty;
+    public string ConnectionString { get; set; } = String.Empty;
 }
