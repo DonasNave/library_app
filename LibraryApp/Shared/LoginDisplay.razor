@@ -1,16 +1,19 @@
 ﻿@using LibraryApp.Identity
+@using LibraryApp.Pages.Identity
 @inject AuthenticationStateProvider AuthStateProvider;
 @inject NavigationManager NavigationManager;
+@inject DialogService DialogService;
 
 <AuthorizeView>
     <Authorized>
-        <NavLink class="nav-link" href="account">Account: @context.User.Identity?.Name</NavLink>
-        <NavLink class="nav-link" href="notifications">Notifications</NavLink>
+        <NavLink class="nav-link" href="account">
+            <span class="oi oi-person" aria-hidden="true" style="margin-right: 5px;"></span>@context.User.Identity?.Name
+        </NavLink>
         <NavLink class="nav-link" @onclick="Logout" style="cursor: pointer">Logout</NavLink>
     </Authorized>
     <NotAuthorized>
-        <NavLink class="nav-link" href="register">Register</NavLink>
-        <NavLink class="nav-link" href="login">Login</NavLink>
+        <NavLink class="nav-link" @onclick="OpenRegister" style="cursor: pointer">Register</NavLink>
+        <NavLink class="nav-link" @onclick="OpenLogin" style="cursor: pointer">Login</NavLink>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -21,5 +24,19 @@
         var libAuthStateProvider = (LibAuthenticationStateProvider)AuthStateProvider;
         await libAuthStateProvider.UpdateAuthenticationState(null);
         NavigationManager.NavigateTo("/");
+    }
+
+    public async Task OpenLogin()
+    {
+        await DialogService.OpenAsync<Login>("Login",
+               new Dictionary<string, object>() {},
+               new DialogOptions() { Width = "450px", Height = "auto", Draggable = true });
+    }
+
+    public async Task OpenRegister()
+    {
+        await DialogService.OpenAsync<Register>("Register",
+               new Dictionary<string, object>() {},
+               new DialogOptions() { Width = "450px", Height = "auto", Draggable = true });
     }
 }

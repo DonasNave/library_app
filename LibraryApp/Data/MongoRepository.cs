@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using LibraryApp.Data.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -16,11 +17,11 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         _collection = database.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
     }
 
-    private protected string GetCollectionName(Type documentType)
+    private static string GetCollectionName(ICustomAttributeProvider documentType)
     {
         return (documentType.GetCustomAttributes(
                 typeof(BsonCollectionAttribute),
-                true)?.FirstOrDefault() as BsonCollectionAttribute)?.CollectionName ?? String.Empty;
+                true).FirstOrDefault() as BsonCollectionAttribute)?.CollectionName ?? string.Empty;
     }
 
     public IQueryable<TDocument> AsQueryable()

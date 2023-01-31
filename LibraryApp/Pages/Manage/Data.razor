@@ -1,0 +1,18 @@
+@page "/data"
+
+@using LibraryApp.Data
+@using LibraryApp.Data.Models
+@using LibraryApp.Identity
+@inject IMongoRepository<LibraryUser> UserRepository
+@inject DialogService DialogService
+@inject LibraryUserProvider UserProvider
+
+<h1>Manage data in dabase</h1>
+
+@code{
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+}

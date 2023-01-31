@@ -59,4 +59,11 @@ app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
+var timer = new PeriodicTimer(TimeSpan.FromMinutes(10));
+
+//while (await timer.WaitForNextTickAsync())
+//{
+    //Method from notifier to be executed every 10 minutes
+//}
+
 app.Run();

@@ -1,17 +1,95 @@
 @page "/account"
-@attribute [Authorize]
 
-<AuthorizeView Roles="Admin">
-    <NotAuthorized>
-        <h3>Not an admin</h3>
-        <p>You're not an admin</p>
-    </NotAuthorized>
-    <Authorized>
-        <h3>Admin</h3>
-        <p>Hey there, admin-thingy</p>
-    </Authorized>
-</AuthorizeView>
+@using LibraryApp.Data
+@using LibraryApp.Data.Models
+@using LibraryApp.Identity
+@inject IMongoRepository<Book> BookRepository
+@inject IMongoRepository<LibraryUser> UserRepository
+@inject DialogService DialogService
+@inject LibraryUserProvider UserProvider
+
+
+@attribute [Authorize]
+<div>
+    <h1>@(user?.Name ?? "Unknown") Account</h1>
+    <AuthorizeView Roles="Admin">
+        <NotAuthorized>
+            <RadzenPanel AllowCollapse="true" Style="width: 700px; margin: 40px auto; box-shadow: 10px 10px 19px 8px rgba(0,0,0,0.55);" >
+                <HeaderTemplate>
+                    <h4 class="m-0 d-flex align-items-center">
+                        <RadzenIcon Icon="book" Class="me-1" /><b>Borrows</b>
+                    </h4>
+                </HeaderTemplate>
+                <ChildContent>
+                    <RadzenCard Class="mt-3 rz-background-color-primary-lighter rz-shadow-0" >
+                        <RadzenDataList PageSize="4" WrapItems="true" AllowPaging="false" AllowVirtualization="true"
+                                        Data="@borrows" TItem="Borrow" >
+                            <Template Context="borrow">
+                                <RadzenCard Style="width: 250px">
+                                    <div class="row">
+                                        <div class="col-md-4 text-end">
+                                            <RadzenButton Variant="Variant.Text" Text="Detail" />
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <RadzenButton Variant="Variant.Text" Text="Return" />
+                                        </div>
+                                    </div>
+                                    <hr style="border: none; background-color: rgba(0,0,0,.08); height: 1px; margin: 1rem 0;" />
+                                    <div class="d-flex flex-row align-items-center">
+                                        <div>
+                                            <h4 class="mb-0">@(borrow.BookName)</h4>
+                                            <div>@(borrow.Created.AddDays(7))</div>
+                                        </div>
+                                    </div>
+                                </RadzenCard>
+                            </Template>
+                        </RadzenDataList>
+                    </RadzenCard>
+                </ChildContent>
+                <SummaryTemplate>
+                    <RadzenCard class="mt-3" Style="background-color: rgb(70, 4, 70);">
+                        <b>@borrows?.Count() Borrows</b>
+                    </RadzenCard>
+                </SummaryTemplate>
+            </RadzenPanel>
+        </NotAuthorized>
+    </AuthorizeView>
+
+    <RadzenCard>
+        <RadzenDataList WrapItems="@true" AllowPaging="@true"
+            Data="@notifications" TItem="Notification" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
+            <Template Context="notification">
+                    <RadzenCard Class="my-3 rz-background-color-primary-lighter rz-shadow-0 rz-border-radius-0" style="margin: 0 calc(-1 * var(--rz-card-padding)); padding: 2rem;"> 
+                        <div class="row">
+                            <RadzenText TextStyle="TextStyle.H6" Class="rz-color-primary-light"><strong>@(notification.Message)</strong></RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">@(notification.DueTo.ToString())</RadzenText>
+                        </div>
+                        <div class="text-end">
+                            <RadzenButton Variant="Variant.Text" Text="Return" />
+                        </div>
+                    </RadzenCard>
+            </Template>
+        </RadzenDataList>
+    </RadzenCard>    
+</div>
+
 
 @code {
+    //Get current user
+    private LibraryUser? user;
+    private IEnumerable<Borrow>? borrows;
+    private IEnumerable<Notification>? notifications;
+
+    protected override Task OnInitializedAsync()
+    {
+        user = UserProvider.CurrentUser;
+        if (user != null)
+        {
+            borrows = user.Borrows;
+            notifications = user.Notifications;
+        }
+
+        return base.OnInitializedAsync();
+    }
     
 }

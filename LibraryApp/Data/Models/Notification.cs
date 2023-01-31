@@ -16,6 +16,7 @@ public record Notification : Document, ISearchable<Notification>
     public string AssigneeId { get; set; } = String.Empty;
     public uint Priority;
     public bool Resolved { get; set; } = false;
+    public bool Hide { get; set; } = false;
 
     public static FilterDefinition<Notification> SearchFilter(string term)
     {

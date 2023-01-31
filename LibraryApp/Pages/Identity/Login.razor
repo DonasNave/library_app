@@ -1,5 +1,3 @@
-@page "/login"
-
 @using LibraryApp.Identity
 @using Microsoft.AspNetCore.Identity
 
@@ -9,55 +7,32 @@
 @inject NavigationManager NavigationManager
 
 
-<PageTitle>Login to account</PageTitle>
 
 <div>
-    <div>
-        <h3>Login</h3>
-    </div>
-    <div class="login-form">
-        <div>
-            <label>Username</label>
-            <input @bind="_model.UserName" type="text" class="form-control" placeholder="user"/>
-        </div>
-        <div>
-            <label>Password</label>
-            <input @bind="_model.UserPass" @onkeydown="Keypress" type="password" class="form-control"/>
-        </div>
-        <div>
-            <button @onclick="Authenticate" class="btn-primary">Login</button>
-        </div>
-    </div>
+    <RadzenCard class="p-5">
+        <RadzenTemplateForm Data=@("LoginWithRegisterAndReset")>
+            <RadzenLogin AllowRegister="false" AllowResetPassword="false" Login=@(args => OnLogin(args)) />
+        </RadzenTemplateForm>
+    </RadzenCard>
 </div>
 
 @code {
 
-    private struct UserModel
+    private async Task OnLogin(LoginArgs args)
     {
-        public string UserName { get; set; }
-        public string UserPass { get; set; }
-    }
-
-    private UserModel _model;
-
-    private async Task Authenticate()
-    {
-        var userAcc = await LibraryUserProvider.GetUser(_model.UserName);
-        if (userAcc is null || 
-            LibraryUserProvider.VerifyPassword(userAcc, _model.UserPass) == PasswordVerificationResult.Failed)
+        var userAcc = await LibraryUserProvider.GetUser(args.Username);
+        if (userAcc is null ||
+            LibraryUserProvider.VerifyPassword(userAcc, args.Password) == PasswordVerificationResult.Failed)
         {
             await Js.InvokeVoidAsync("alert", "Invalid username or password");
             return;
         }
 
-        if (AuthenticationStateProvider is LibAuthenticationStateProvider libAuthState ) 
+        if (AuthenticationStateProvider is LibAuthenticationStateProvider libAuthState)
             await libAuthState.UpdateAuthenticationState(userAcc);
-        
-        NavigationManager.NavigateTo("/", true);
-    }
 
-    private async void Keypress(KeyboardEventArgs args)
-    {
-        if (args.Code.Equals("Enter")) await Authenticate();
+        LibraryUserProvider.CurrentUser = userAcc;
+
+        NavigationManager.NavigateTo("/", true);
     }
 }

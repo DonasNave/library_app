@@ -4,7 +4,6 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>Welcome to the Library</h1>
 
 <AuthorizeView>
     <Authorized>
@@ -15,8 +14,72 @@
     </NotAuthorized>
 </AuthorizeView>
 
+<h1>Welcome to the Library</h1>
+
+<RadzenCard Class="rz-shadow-2">
+    <div class="row">
+        <div class="my-3 my-lg-5">
+            <RadzenArcGauge Style="width: 100%; height: 250px;">
+                <RadzenArcGaugeScale Step="20" Min="0" Max="260" MinorStep="2" Radius="1.5" TickPosition=@(GaugeTickPosition.None) Y="0.9" Margin="0">
+                    <RadzenArcGaugeScaleValue Value=@value ShowValue=@true>
+                        <Template Context="pointer">
+                            <h4>
+                                @pointer.Value Books
+                            </h4>
+                        </Template>
+                    </RadzenArcGaugeScaleValue>
+                </RadzenArcGaugeScale>
+            </RadzenArcGauge>
+        </div>
+    </div>
+</RadzenCard>
+
+<RadzenCard>
+    <div class="row">
+        <RadzenChart>
+            <RadzenPieSeries Data="@revenue" Title="Revenue" CategoryProperty="Quarter" ValueProperty="Revenue">
+                <RadzenSeriesDataLabels Visible="@true" />
+            </RadzenPieSeries>
+        </RadzenChart>
+    </div>
+</RadzenCard>
+
 @code
 {
+    bool showValue = true;
+    double value = 100;
+    IEnumerable<GaugeTickPosition> tickPositions = Enum.GetValues(typeof(GaugeTickPosition)).Cast<GaugeTickPosition>();
+    GaugeTickPosition tickPosition = GaugeTickPosition.Outside;
+
+    class DataItem
+    {
+        public string Quarter { get; set; } = String.Empty;
+        public double Revenue { get; set; }
+    }
+
+    DataItem[] revenue = new DataItem[] {
+        new DataItem
+        {
+            Quarter = "Q1",
+            Revenue = 30000
+        },
+        new DataItem
+        {
+            Quarter = "Q2",
+            Revenue = 40000
+        },
+        new DataItem
+        {
+            Quarter = "Q3",
+            Revenue = 50000
+        },
+        new DataItem
+        {
+            Quarter = "Q4",
+            Revenue = 80000
+        },
+    };
+
     protected override Task OnInitializedAsync()
     {
         Migrator.MigrateAll();

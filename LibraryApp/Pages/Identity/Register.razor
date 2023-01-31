@@ -1,16 +1,11 @@
-@page "/Register"
 @using LibraryApp.Identity
 @inject IJSRuntime Js
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject LibraryUserProvider LibraryUserProvider
 
-<PageTitle>Register account</PageTitle>
 
-<div>
-    <div>
-        <h3>Register</h3>
-    </div>
+<RadzenCard class="p-5">
     <div class="login-form">
         <div>
             <label>Username</label>
@@ -30,10 +25,10 @@
             <label style="color: #ff3c00">@_passCheckError</label>
         </div>
         <div>
-            <button @onclick="RegisterUser" class="btn-primary">Register</button>
+            <RadzenButton @onclick="RegisterUser" class="btn-primary">Register</RadzenButton>
         </div>
     </div>
-</div>
+</RadzenCard>
 
 @code {
 

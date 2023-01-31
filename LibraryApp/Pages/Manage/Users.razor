@@ -1,0 +1,58 @@
+@page "/users"
+
+@using LibraryApp.Data
+@using LibraryApp.Data.Models
+@using LibraryApp.Identity
+@inject IMongoRepository<LibraryUser> UserRepository
+@inject DialogService DialogService
+@inject LibraryUserProvider UserProvider
+
+
+<h1>Manage users</h1>
+
+<RadzenCard>
+    <RadzenDataList AllowVirtualization=@false WrapItems="@true" AllowPaging="@true"
+        Data="@users" TItem="LibraryUser" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
+        <Template Context="user">
+            <RadzenCard Style="width: 100%; padding: 0; overflow: hidden;">
+                <div class="container">
+                    <div class="row" style="margin-left: calc(var(--bs-gutter-x) * -1); margin-right: calc(var(--bs-gutter-x) * -1)">
+                        <div class="col-lg-3 p-3 product-title">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-color-secondary">@(user.UserName)</RadzenText>
+                        </div>
+                        <div class="col-lg-7 p-3">
+                            <div class="row d-flex">
+                                <div class="col-md-6 col-lg-2">
+                                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">@(user.Name)</RadzenText>
+                                    <RadzenText TextStyle="TextStyle.H6" class="mb-sm-2 mb-lg-0">@(user.Surname)</RadzenText>
+                                </div>
+                                <div class="col-md-6 col-lg-2">
+                                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">Origin</RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">@(user.Surname)</RadzenText>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 p-3">
+                            <RadzenButton Text="Order now" Class="w-100" />
+                        </div>
+                    </div>
+                </div>
+            </RadzenCard>
+        </Template>
+    </RadzenDataList>
+</RadzenCard>
+
+@code{
+
+    private LibraryUser? user;
+    private IEnumerable<LibraryUser>? users;
+
+    protected override Task OnInitializedAsync()
+    {
+        user = UserProvider.CurrentUser;
+        if (user != null)
+            users = UserRepository.FilterBy(u => u.Role == UserRole.Customer);
+        
+        return base.OnInitializedAsync();
+    }
+}

@@ -2,12 +2,16 @@
 
 <PageTitle>Books</PageTitle>
 
-@using LibraryApp.Data.Models
 @using LibraryApp.Data
+@using LibraryApp.Data.Models
+@using LibraryApp.Identity
 @using LibraryApp.Shared.ModelDetails
 @using MongoDB.Bson
-@inject IMongoRepository<Book> MongoRepository
+@inject IMongoRepository<Book> BookRepository
+@inject IMongoRepository<LibraryUser> UserRepository
+@inject LibraryUserProvider UserProvider
 @inject DialogService DialogService
+@inject NotificationService NotificationService
 
 <h1>Books</h1>
 
@@ -20,9 +24,7 @@
 
 @if (_books == null) // TODO <loadable> component
 {
-    <p>
-    <em>Loading...</em>
-</p>
+    <p><em>Loading...</em></p>
 }
 else
 {
@@ -30,45 +32,44 @@ else
     FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="10" AllowPaging="true"
     PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" Data="@_books" TItem="Book" ColumnWidth="300px"
     LogicalFilterOperator="LogicalFilterOperator.Or">
-    <Columns>
-        <RadzenDataGridColumn TItem="Book" Property="Name" Filterable="false" Title="Name" Frozen="true" Width="100px"
+        <Columns>
+            <RadzenDataGridColumn TItem="Book" Property="Name" Filterable="false" Title="Name" Frozen="true" Width="100px"
             TextAlign="TextAlign.Center" />
-        @* <RadzenDataGridColumn TItem="Employee" Title="Photo" Frozen="true" Sortable="false" Filterable="false"
-            Width="80px" TextAlign="TextAlign.Center" > *@
-        @* <Template Context="data"> *@
-        @* <RadzenImage Path="@data.Photo" class="rz-gravatar" /> *@
-        @* </Template> *@
-        @* </RadzenDataGridColumn> *@
-        <RadzenDataGridColumn TItem="Book" Property="AltName" Title="Alternative name" Frozen="true" Width="100px" />
-        <RadzenDataGridColumn TItem="Book" Property="Description" Title="Last Name" Width="200px" />
-        <RadzenDataGridColumn TItem="Book" Property="Released" FormatString="{0:d}" Title="Released" Width="90px" />
-        <RadzenDataGridColumn TItem="Book" Property="Pages" FormatString="{0:d}" Title="Pages" Width="80px" />
-        <AuthorizeView Roles="Customer">
-            <RadzenDataGridColumn TItem="Book" Property="Borrow" Filterable="false" Sortable="false" Title=""
-                Width="90px">
+            @* <RadzenDataGridColumn TItem="Employee" Title="Photo" Frozen="true" Sortable="false" Filterable="false"
+                Width="80px" TextAlign="TextAlign.Center" > *@
+            @* <Template Context="data"> *@
+            @* <RadzenImage Path="@data.Photo" class="rz-gravatar" /> *@
+            @* </Template> *@
+            @* </RadzenDataGridColumn> *@
+            @* <RadzenDataGridColumn TItem="Book" Property="AltName" Title="Alternative name" Frozen="true" Width="100px" /> *@
+            <RadzenDataGridColumn TItem="Book" Property="Description" Title="Last Name" Width="200px" />
+            <RadzenDataGridColumn TItem="Book" Property="Released" FormatString="{0:d}" Title="Released" Width="90px" />
+            <RadzenDataGridColumn TItem="Book" Property="Pages" FormatString="{0:d}" Title="Pages" Width="80px" />
+            <AuthorizeView Roles="Customer">
+                <RadzenDataGridColumn TItem="Book" Property="Borrow" Filterable="false" Sortable="false" Title="" Width="90px">
+                    <Template Context="data">
+                        <RadzenButton ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Shade="Shade.Lighter" 
+                                      Icon="add" Class="m-1" Click=@(() => BorrowBook(data.Id)) Text="Borrow" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </AuthorizeView>
+            <AuthorizeView Roles="Admin">
+                <RadzenDataGridColumn TItem="Book" Property="Delete" Filterable="false" Sortable="false" Title=""
+                    Width="90px">
+                        <Template Context="data">
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                Icon="delete" Class="m-1" Click=@(() => DeleteBook(data.Id)) Text="Delete" />
+                        </Template>
+                </RadzenDataGridColumn>
+            </AuthorizeView>
+            <RadzenDataGridColumn TItem="Book" Property="Info" Filterable="false" Sortable="false" Title="" Width="90px">
                 <Template Context="data">
-                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Shade="Shade.Lighter"
-                        Icon="add" Class="m-1" Click=@(() => BorrowBook(data.Id)) Text="Borrow" />
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter" Icon="info"
+                        Class="m-1" Click=@(() => OpenBook(data.Id)) Text="Info" />
                 </Template>
             </RadzenDataGridColumn>
-        </AuthorizeView>
-        <AuthorizeView Roles="Admin">
-            <RadzenDataGridColumn TItem="Book" Property="Delete" Filterable="false" Sortable="false" Title=""
-                Width="90px">
-                <Template Context="data">
-                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter"
-                        Icon="delete" Class="m-1" Click=@(() => DeleteBook(data.Id)) Text="Delete" />
-                </Template>
-            </RadzenDataGridColumn>
-        </AuthorizeView>
-        <RadzenDataGridColumn TItem="Book" Property="Info" Filterable="false" Sortable="false" Title="" Width="90px">
-            <Template Context="data">
-                <RadzenButton ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter" Icon="info"
-                    Class="m-1" Click=@(() => OpenBook(data.Id)) Text="Info" />
-            </Template>
-        </RadzenDataGridColumn>
-    </Columns>
-</RadzenDataGrid>
+        </Columns>
+    </RadzenDataGrid>
 }
 
 @code {
@@ -80,26 +81,63 @@ else
     {
         if (SearchInput?.Length > 2)
         {
-            _books = MongoRepository.SearchFor(SearchInput);
+            _books = BookRepository.SearchFor(SearchInput);
         }
         await Task.Run(() => null);
     }
 
     private async Task DeleteBook(ObjectId bookId)
     {
-        await MongoRepository.DeleteByIdAsync(bookId);
+        await BookRepository.DeleteByIdAsync(bookId);
         LoadBooks();
     }
 
     private async Task BorrowBook(ObjectId bookId)
     {
-        //Descrease current books copies by one
-        //Save current book
-        //Create assignment of the book borrow for current User
-        //Save current user
-        //Create notification signaling book borrow
-        //Save said notification
-        Task.Run(() => null);
+        var curUser = UserProvider.CurrentUser;
+        if (curUser is not null)
+        {
+            if (curUser.Borrows.Exists(x => x.Id == bookId.ToString()))
+            {
+                ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Info, Summary = "Already borrowed", Detail = $"You have this book borrowed already.", Duration = 4000 });
+                return;
+            }
+            if (curUser.Borrows.Count >= 6)
+            {
+                ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Warning, Summary = "Limit reached", Detail = $"Limit of books borrowed has been reached.", Duration = 4000 });
+                return;
+            }
+
+            var book = _books?.FirstOrDefault(x => x.Id == bookId);
+
+            if (book is {Copies: > 0 })
+            {
+                book.Copies--;
+                await BookRepository.ReplaceOneAsync(book);
+
+                var borrow = new Borrow
+                {
+                    Id = bookId.ToString(), BookName = book.Name, 
+                    Created = DateTime.Now, Message = "You have borrowed a book"
+                };
+
+                var notification = new Notification()
+                {
+                    AssigneeId = curUser.Id.ToString(),
+                    RefId = bookId.ToString(),
+                    Action = NotificationAction.ReturnBookReminder,
+                    DueTo = DateTime.Now.AddDays(7)
+                };
+                
+                curUser.Borrows.Add(borrow);
+                curUser.Notifications.Add(notification);
+
+                await UserRepository.ReplaceOneAsync(curUser);
+                ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Success, Summary = "Book borrowed", Detail = $"{book.Name} has been borrowed", Duration = 4000 });
+            }
+        }
+        LoadBooks();
+        
     }
 
     async Task OpenBook(ObjectId bookId)
@@ -109,11 +147,18 @@ else
         new DialogOptions() { Width = "800px", Height = "700px" });
     }
 
+    async void ShowNotification(NotificationMessage message)
+    {
+        NotificationService.Notify(message);
+
+        await InvokeAsync(() => {StateHasChanged();});
+    }
+
     protected override Task<bool> OnInitializedAsync()
     {
         LoadBooks();
         return Task.Run(() => true);
     }
 
-    private void LoadBooks() => _books = MongoRepository.FilterBy(book => true);
+    private void LoadBooks() => _books = BookRepository.FilterBy(book => true);
 }

@@ -18,18 +18,21 @@ public record LibraryUser : Document, ISearchable<LibraryUser>
     public UserRole Role { get; set; } = UserRole.Anonymous;
     public string UserName { get; set; } = String.Empty;
     public bool Active { get; set; } = false;
+    public bool Banned { get; set; } = false;
     public string Name { get; set; } = String.Empty;
     public string Surname { get; set; } = String.Empty;
     public string PasswordHash { get; set; } = String.Empty;
-    public List<Assignment> Assignments { get; set; } = new();
+    public List<Borrow> Borrows { get; set; } = new();
+    public List<Notification> Notifications { get; set; } = new();
     public static FilterDefinition<LibraryUser> SearchFilter(string searchTerm)
     {
         throw new NotImplementedException();
     }
 }
-public class Assignment
+public class Borrow
 {
     public string Id { get; init; } = String.Empty;
+    public string BookName { get; init; } = String.Empty;
     public DateTime Created { get; init; }
     public string Message { get; set; } = String.Empty;
 }

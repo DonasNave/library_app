@@ -9,6 +9,7 @@ public class LibraryUserProvider
     private readonly IMongoRepository<LibraryUser> _libUsersRepository;
     private readonly IMongoRepository<Notification> _notificationsRepository;
     private readonly PasswordHasher<LibraryUser> _passwordHasher;
+    public LibraryUser? CurrentUser { get; set; }
 
     public LibraryUserProvider(IMongoRepository<LibraryUser> libUsersRepository, IMongoRepository<Notification> notificationRepository, PasswordHasher<LibraryUser> passwordHasher)
     {
