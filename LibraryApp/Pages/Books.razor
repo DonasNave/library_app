@@ -47,10 +47,17 @@ else
             <AuthorizeView Roles="Customer">
                 <RadzenDataGridColumn TItem="Book" Property="Borrow" Filterable="false" Sortable="false" Title="" Width="90px">
                     <Template Context="data">
-                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" 
-                                      Icon="plus" Class="m-1" Click=@(() => BorrowBook(data.Id)) 
-                                      Text="@(user.Borrows.Exists(b => b.Id == data.Id.ToString()) ? 
-                                                "Return" : "Borrow")" />
+                        @if (user?.Borrows.Exists(b => b.Id == data.Id.ToString()) ?? false)
+                        {
+                            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                          Icon="exit_to_app" Class="m-1" Click=@(() => ReturnBook(data.Id)) Text="Return"/>
+                        }
+                        else
+                        {
+                            <RadzenButton ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                          Icon="add_shopping_cart" Class="m-1" Click=@(() => BorrowBook(data.Id)) Text="Borrow"/>
+                        }
+                        
                     </Template>
                 </RadzenDataGridColumn>
             </AuthorizeView>
@@ -93,11 +100,21 @@ else
 
     private async Task DeleteBook(ObjectId bookId)
     {
-        await BookRepository.DeleteByIdAsync(bookId);
-        LoadBooks();
+        var u = UserRepository.FilterBy(user => user.Borrows.Any(b => b.Id == bookId.ToString()));
+
+        if (u.Any())
+        {
+            ShowNotification(new NotificationMessage() {Severity = NotificationSeverity.Error, Summary = "Book copy borrowed", 
+                Detail = $"This book has copy borrowed by a user.", Duration = 4000}); 
+        }
+        else
+        {
+            await BookRepository.DeleteByIdAsync(bookId);
+            LoadBooks();
+        }
     }
 
-    private async Task BorrowBook(ObjectId bookId)
+    private async Task ReturnBook(ObjectId bookId)
     {
         user = UserProvider.GetLatestUser();
         if (user is not null)
@@ -105,18 +122,33 @@ else
             if (user.Borrows.Exists(book => book.Id == bookId.ToString()))
             {
                 user.Borrows.Remove(user.Borrows.FirstOrDefault(book => book.Id == bookId.ToString()));
-                await UserRepository.ReplaceOneAsync(user);
 
                 var uBook = _books?.FirstOrDefault(x => x.Id == bookId);
                 uBook.Copies++;
                 await BookRepository.ReplaceOneAsync(uBook);
+                
+                foreach (Notification notification in user?.Notifications.Where(not => not.RefId == uBook.Id.ToString() 
+                                                                                       && not.Action == NotificationAction.ReturnBookReminder
+                                                                                       && not.Resolved == false))
+                {
+                    notification.Resolved = true;  
+                }
+                await UserRepository.ReplaceOneAsync(user);
 
-                ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Info, Summary = "Book returned", Detail = $"You have returned this book.", Duration = 4000 });
+                ShowNotification(new NotificationMessage() {Severity = NotificationSeverity.Info, Summary = "Book returned", 
+                    Detail = $"You have returned this book.", Duration = 4000});
 
                 LoadBooks();
-                return;
             }
-
+        }
+    }
+    
+    
+    private async Task BorrowBook(ObjectId bookId)
+    {
+        user = UserProvider.GetLatestUser();
+        if (user is not null)
+        {
             if (user.Borrows.Count >= 6)
             {
                 ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Warning, Summary = "Limit reached", Detail = $"Limit of books borrowed has been reached.", Duration = 4000 });
@@ -141,7 +173,8 @@ else
                     AssigneeId = user.Id.ToString(),
                     RefId = bookId.ToString(),
                     Action = NotificationAction.ReturnBookReminder,
-                    DueTo = DateTime.Now.AddDays(7)
+                    DueTo = DateTime.Now.AddDays(6),
+                    Message = $"You have borrowed {book.Name}. Please return it by {DateTime.Now.AddDays(6).ToShortDateString()}.",
                 };
                 
                 user.Borrows.Add(borrow);
@@ -171,7 +204,7 @@ else
 
     protected override Task<bool> OnInitializedAsync()
     {
-        user = UserProvider.CurrentUser;
+        user = UserProvider.GetLatestUser();
         LoadBooks();
         return Task.Run(() => true);
     }

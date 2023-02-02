@@ -3,6 +3,7 @@
 @using LibraryApp.Data
 @inject IMongoRepository<Book> BookRepo
 @inject DialogService DialogService
+@inject IJSRuntime Js
 
 
 @if (Book == null)
@@ -27,7 +28,7 @@ else
                                     <RadzenTextBox style="width: 100%;" Name="Name" @bind-Value="Book.Name"/>
                                 </Authorized>
                                 <NotAuthorized Context="identityState">
-                                    <RadzenText>@Book.Name</RadzenText>
+                                    <RadzenText Style="height: max-content">@Book.Name</RadzenText>
                                 </NotAuthorized>
                             </AuthorizeView>
                         </div>
@@ -130,16 +131,22 @@ else
                         <Authorized>
                             <RadzenCard>
                                 <h4 class="mb-4">Front: </h4>
-                                <RadzenFileInput @bind-Value="ImageFront.Data" TValue="string" class="w-100" />
+                                <RadzenFileInput @bind-Value="ImageFront.Data" TValue="string" class="w-100" 
+                                                 @bind-FileName=@ImageFront.Name
+                                                 Error=@(args => OnError(args, "FileFront"))
+                                                 Change=@(args => OnChange(args, "FileFront")) />
                             </RadzenCard>
                             <RadzenCard>
                                 <h4 class="mb-4">Back: </h4>
-                                <RadzenFileInput @bind-Value="ImageCover.Data" TValue="string" class="w-100" />
+                                <RadzenFileInput @bind-Value="ImageCover.Data" TValue="string" class="w-100" 
+                                                 @bind-FileName=@ImageCover.Name 
+                                                 Error=@(args => OnError(args, "FileCover"))
+                                                 Change=@(args => OnChange(args, "FileCover")) />
                             </RadzenCard>
                         </Authorized>
                         <NotAuthorized>
-                            <img class="image" src="@ImageFront.Data" />
-                            <img class="image" src="@ImageCover.Data" />
+                            <img class="image" alt="image of front" style="width: 50%" src="@ImageFront.Data" />
+                            <img class="image" alt="image of back" style="width: 50%" src="@ImageCover.Data" />
                         </NotAuthorized>
                     </AuthorizeView>
                 </RadzenFieldset>
@@ -187,6 +194,16 @@ else
        DialogService.Close();
     }
 
+    void OnChange(string value, string name)
+    {
+        ProgressInfo = "Loaded";
+    }
+
+    async void OnError(UploadErrorEventArgs args, string name)
+    {
+        await Js.InvokeVoidAsync("alert", $"Error during upload of {name}: {args.Message}");
+    }
+    
     private void OnProgress(UploadProgressArgs args) => ProgressInfo = $"Uploading {args.Progress}%";
 
     private void OnUpload(UploadCompleteEventArgs _) => ProgressInfo = String.Empty;

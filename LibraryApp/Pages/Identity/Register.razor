@@ -1,8 +1,11 @@
 @using LibraryApp.Identity
+@using LibraryApp.Data
+@using LibraryApp.Data.Models
 @inject IJSRuntime Js
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject LibraryUserProvider LibraryUserProvider
+@inject IMongoRepository<LibraryUser> LibraryUserRepository
 
 
 <RadzenCard class="p-5">
@@ -25,7 +28,7 @@
             <label style="color: #ff3c00">@_passCheckError</label>
         </div>
         <div>
-            <RadzenButton @onclick="RegisterUser" class="btn-primary">Register</RadzenButton>
+            <RadzenButton Click="RegisterUser" class="btn-primary">Register</RadzenButton>
         </div>
     </div>
 </RadzenCard>
@@ -57,16 +60,15 @@
 
         userAcc = await LibraryUserProvider.RegisterUser(_model.UserName, _model.UserPass);
         
-        if (userAcc is not null)
+        var admin = LibraryUserRepository.FindOne(user => user.Role == UserRole.Admin);
+        admin.Notifications.Add(new Notification
         {
-            if (AuthenticationStateProvider is LibAuthenticationStateProvider libAuthState)
-            {
-                await libAuthState.UpdateAuthenticationState(userAcc);
-                NavigationManager.NavigateTo("/", true);
-                return;
-            }
-        }
-        
-        await Js.InvokeVoidAsync("alert", $"There was trouble during user registration.");
+            Message = $"User {_model.UserName} has been registered. Please activate his account.",
+            CreatedAt = DateTime.Now,
+            DueTo = DateTime.Now.AddDays(2)
+        });
+        await LibraryUserRepository.ReplaceOneAsync(admin);
+
+        await Js.InvokeVoidAsync("alert", $"Wait until admin activates your account");
     }
 }

@@ -45,7 +45,7 @@ public class Migrator
     public void Import(RepositoryType type, string filePath)
     {
         //Load file from filePath
-        var json = JsonDocument.Parse(File.ReadAllText(filePath));
+        var json = JsonDocument.Parse(File.ReadAllText($"{Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName}/LibraryApp/LibraryApp/Data/Documents/{filePath}"));
         switch (type)
         {
             case RepositoryType.Book:

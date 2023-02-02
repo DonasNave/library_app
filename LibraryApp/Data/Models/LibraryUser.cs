@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -26,7 +27,34 @@ public record LibraryUser : Document, ISearchable<LibraryUser>
     public List<Notification> Notifications { get; set; } = new();
     public static FilterDefinition<LibraryUser> SearchFilter(string searchTerm)
     {
-        throw new NotImplementedException();
+        var searchPattern = new BsonRegularExpression($"(.*){Regex.Escape(searchTerm)}(.*)");
+
+        var nameField = new ExpressionFieldDefinition<LibraryUser, string>(user => user.Name);
+        var authorField = new ExpressionFieldDefinition<LibraryUser, string>(user => user.Surname);
+        var isbnField = new ExpressionFieldDefinition<LibraryUser, string>(user => user.UserName);
+        
+        bool? lookBanned = searchTerm.ToLower() switch
+        {
+            "banned" => true,
+            "unbanned" => false,
+            _ => null
+        };
+        
+        bool? lookActive = searchTerm.ToLower() switch
+        {
+            "active" => true,
+            "inactive" => false,
+            _ => null
+        };
+
+        var nameFilter = Builders<LibraryUser>.Filter.Regex(nameField, searchPattern);
+        var authorFilter = Builders<LibraryUser>.Filter.Regex(authorField, searchPattern);
+        var isbnFilter = Builders<LibraryUser>.Filter.Regex(isbnField, searchPattern);
+        var activeFilter = Builders<LibraryUser>.Filter.Where(user => user.Active == lookActive);
+        var bannedFilter = Builders<LibraryUser>.Filter.Where(user => user.Banned == lookBanned);
+        var adminFilter = Builders<LibraryUser>.Filter.Where(user => user.Role != UserRole.Admin);
+            
+        return (nameFilter | authorFilter | isbnFilter | activeFilter | bannedFilter) & adminFilter;
     }
 }
 public class Borrow

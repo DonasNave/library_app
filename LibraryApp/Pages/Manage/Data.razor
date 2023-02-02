@@ -14,7 +14,7 @@
 <h2>Import JSON to database</h2>
  <div class="col-md-6 p-3">
     <RadzenCard>
-        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Collection to be imported</RadzenText>
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Collection objects to be imported</RadzenText>
         <RadzenDropDown AllowClear="true" TValue="string" Class="w-100" 
                         Data=@(new List<RepositoryType>(){RepositoryType.LibraryUser, RepositoryType.Book})
                         Change=@(args => OnChange(args, "DDInput")) />
@@ -28,15 +28,15 @@
     </RadzenCard>
 </div>
 
+<h2>Export database as JSON</h2>
 <div class="col-md-6 p-3">
     <RadzenCard>
         <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Choose collection that will be exported</RadzenText>
         <RadzenDropDown AllowClear="true" TValue="string" Class="w-100" 
                         Data=@(new List<RepositoryType>(){RepositoryType.LibraryUser, RepositoryType.Book})
                         Change=@(args => OnChange(args, "DDOutput")) />
-        <RadzenButton Text="Export" Click="@OnExport" />
+        <RadzenButton Text="Export" Click="@OnExport" Style="margin-top: 5px" />
     </RadzenCard>
-    
 </div>
 
 

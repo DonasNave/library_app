@@ -3,42 +3,88 @@
 @using LibraryApp.Data
 @using LibraryApp.Data.Models
 @using LibraryApp.Identity
+@using MongoDB.Bson
 @inject IMongoRepository<Book> BookRepository
 @inject IMongoRepository<LibraryUser> UserRepository
 @inject DialogService DialogService
 @inject LibraryUserProvider UserProvider
+@inject NotificationService NotificationService
+@inject IJSRuntime Js
 
 
 @attribute [Authorize]
 <div>
     <h1>@(user?.Name ?? "Unknown") Account</h1>
+    
     <AuthorizeView Roles="Admin">
         <NotAuthorized>
-            <RadzenPanel AllowCollapse="true" Style="width: 700px; margin: 40px auto; box-shadow: 10px 10px 19px 8px rgba(0,0,0,0.55);" >
+            <RadzenPanel AllowCollapse="true" Style="margin: 40px auto; box-shadow: 10px 10px 19px 8px rgba(0,0,0,0.55);">
                 <HeaderTemplate>
                     <h4 class="m-0 d-flex align-items-center">
-                        <RadzenIcon Icon="book" Class="me-1" /><b>Borrows</b>
+                        <RadzenIcon Icon="account" Class="me-1"/><b>Account</b>
                     </h4>
                 </HeaderTemplate>
                 <ChildContent>
-                    <RadzenCard Class="mt-3 rz-background-color-primary-lighter rz-shadow-0" >
-                        <RadzenDataList PageSize="4" WrapItems="true" AllowPaging="false" AllowVirtualization="true"
-                                        Data="@borrows" TItem="Borrow" >
-                            <Template Context="borrow">
-                                <RadzenCard Style="width: 250px">
-                                    <div class="row">
-                                        <div class="col-md-4 text-end">
-                                            <RadzenButton Variant="Variant.Text" Text="Detail" />
-                                        </div>
-                                        <div class="col-md-4 text-end">
-                                            <RadzenButton Variant="Variant.Text" Text="Return" />
-                                        </div>
+                    <div class="container-fluid">
+                        <!-- Book Info -->
+                        <div class="row">
+                            <RadzenFieldset Text="User Info">
+                                <div class="row">
+                                    <div class="col-md-4 align-items-center d-flex">
+                                        <RadzenLabel Text="Name:"/>
                                     </div>
-                                    <hr style="border: none; background-color: rgba(0,0,0,.08); height: 1px; margin: 1rem 0;" />
+                                    <div class="col-md-8">
+                                        <RadzenTextBox style="width: 100%;" Name="Name" @bind-Value="user.Name"/>
+                                    </div>
+                                </div><!-- Name -->
+                                <div class="row">
+                                    <div class="col-md-4 align-items-center d-flex">
+                                        <RadzenLabel Text="Surname:"/>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <RadzenTextBox style="width: 100%;" Name="Surname" @bind-Value="user.Surname"/>
+                                    </div>
+                                </div><!-- AltName -->
+                                <div class="row">
+                                    <div class="col-md-4 align-items-center d-flex">
+                                        <RadzenLabel Text="UserName:"/>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <RadzenTextBox style="width: 100%;" Disabled="true" Name="UserName" @bind-Value="user.UserName"/>
+                                    </div>
+                                </div>
+                                <RadzenButton ButtonStyle="ButtonStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter" Icon="info"
+                                                        Class="m-1" Click="@(SaveUser)" Text="Save" />
+                            </RadzenFieldset>
+                        </div>
+                    </div>
+                </ChildContent>
+            </RadzenPanel>
+
+            <RadzenPanel AllowCollapse="true" Style="margin: 40px auto; box-shadow: 10px 10px 19px 8px rgba(0,0,0,0.55);">
+                <HeaderTemplate>
+                    <h4 class="m-0 d-flex align-items-center">
+                        <RadzenIcon Icon="book" Class="me-1"/><b>Borrows</b>
+                    </h4>
+                </HeaderTemplate>
+                <ChildContent>
+                    <RadzenCard Class="mt-3 rz-background-color-primary-lighter rz-shadow-0">
+                        <RadzenDataList PageSize="4" WrapItems="true" AllowPaging="false" AllowVirtualization="true"
+                                        Data="@borrows" TItem="Borrow">
+                            <Template Context="borrow">
+                                <RadzenCard Style="width: 250px; margin: 5px">
                                     <div class="d-flex flex-row align-items-center">
                                         <div>
                                             <h4 class="mb-0">@(borrow.BookName)</h4>
                                             <div>@(borrow.Created.AddDays(7))</div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <RadzenButton ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                                          Icon="local_library" Class="m-1" Text="Read" Click="ReadBook"/>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat" Shade="Shade.Lighter"
+                                                          Icon="exit_to_app" Class="m-1" Click="@(() => ReturnBook(borrow.Id))" Text="Return"/>
                                         </div>
                                     </div>
                                 </RadzenCard>
@@ -47,30 +93,48 @@
                     </RadzenCard>
                 </ChildContent>
                 <SummaryTemplate>
-                    <RadzenCard class="mt-3" Style="background-color: rgb(70, 4, 70);">
+                    <RadzenCard class="mt-3 rz-background-color-primary-lighter">
                         <b>@borrows?.Count() Borrows</b>
                     </RadzenCard>
                 </SummaryTemplate>
             </RadzenPanel>
         </NotAuthorized>
     </AuthorizeView>
-
-    <RadzenCard>
-        <RadzenDataList WrapItems="@true" AllowPaging="@true"
-            Data="@notifications" TItem="Notification" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
-            <Template Context="notification">
-                    <RadzenCard Class="my-3 rz-background-color-primary-lighter rz-shadow-0 rz-border-radius-0" style="margin: 0 calc(-1 * var(--rz-card-padding)); padding: 2rem;"> 
+    
+    <RadzenPanel AllowCollapse="true" Style="margin: 40px auto; box-shadow: 10px 10px 19px 8px rgba(0,0,0,0.55);" >
+        <HeaderTemplate>
+            <h4 class="m-0 d-flex align-items-center">
+                <RadzenIcon Icon="announcement" Class="me-1" /><b>Notifications</b>
+            </h4>
+        </HeaderTemplate>
+    <ChildContent>
+        <RadzenCard>
+            <RadzenDataList WrapItems="@true" AllowPaging="@true"
+                            Data="@notifications" TItem="Notification" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
+                <Template Context="notification">
+                    <RadzenCard Class="my-3 rz-background-color-primary-lighter rz-shadow-0 rz-border-radius-0" 
+                                style="width: 100%; padding: 10px;"> 
                         <div class="row">
-                            <RadzenText TextStyle="TextStyle.H6" Class="rz-color-primary-light"><strong>@(notification.Message)</strong></RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body2" Class="rz-color-primary-light">@(notification.Message)</RadzenText>
                             <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">@(notification.DueTo.ToString())</RadzenText>
-                        </div>
-                        <div class="text-end">
-                            <RadzenButton Variant="Variant.Text" Text="Return" />
+                            
+                            <div class="text-end">
+                                @if (notification.Resolved)
+                                {
+                                    <RadzenIcon Icon="task_alt"/>
+                                }
+                                else
+                                {
+                                    <RadzenIcon Icon="notification_important"/>
+                                }
+                            </div>
                         </div>
                     </RadzenCard>
-            </Template>
-        </RadzenDataList>
-    </RadzenCard>    
+                </Template>
+            </RadzenDataList>
+        </RadzenCard>    
+    </ChildContent>
+    </RadzenPanel>
 </div>
 
 
@@ -80,15 +144,59 @@
     private IEnumerable<Borrow>? borrows;
     private IEnumerable<Notification>? notifications;
 
+    private async Task ReturnBook(string bookId)
+    {
+        user = UserProvider.GetLatestUser();
+        if (user is not null)
+        {
+            if (user.Borrows.Exists(book => book.Id == bookId))
+            {
+                user.Borrows.Remove(user.Borrows.FirstOrDefault(book => book.Id == bookId));
+
+                var uBook = BookRepository.FindById(bookId);
+                uBook.Copies++;
+                await BookRepository.ReplaceOneAsync(uBook);
+                
+                foreach (Notification notification in user?.Notifications.Where(not => not.RefId == uBook.Id.ToString() 
+                                                                                       && not.Action == NotificationAction.ReturnBookReminder
+                                                                                       && not.Resolved == false))
+                {
+                    notification.Resolved = true;  
+                }
+                await UserRepository.ReplaceOneAsync(user);
+
+                NotificationService.Notify(new NotificationMessage() {Severity = NotificationSeverity.Info, Summary = "Book returned", 
+                    Detail = $"You have returned this book.", Duration = 4000});
+
+                LoadData();
+            }
+        }
+    }
+
+    private async void SaveUser()
+    {
+        await UserRepository.ReplaceOneAsync(user);
+        LoadData();
+        NotificationService.Notify(new NotificationMessage() {Severity = NotificationSeverity.Info, Summary = "Info changed", 
+            Detail = $"You have changed your profile.", Duration = 4000});
+    }
+
+    private void LoadData()
+    {
+        user = UserProvider.GetLatestUser();
+        if (user == null) return;
+        borrows = user.Borrows;
+        notifications = user.Notifications.OrderByDescending(n=> n.Resolved == false).ThenByDescending(n => n.DueTo);
+    }
+
+    private async void ReadBook()
+    {
+        await Js.InvokeVoidAsync("alert", "Imitate reading");
+    }
+    
     protected override Task OnInitializedAsync()
     {
-        user = UserProvider.CurrentUser;
-        if (user != null)
-        {
-            borrows = user.Borrows;
-            notifications = user.Notifications;
-        }
-
+        LoadData();
         return base.OnInitializedAsync();
     }
     

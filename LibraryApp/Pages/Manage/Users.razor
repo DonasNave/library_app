@@ -7,12 +7,14 @@
 @inject DialogService DialogService
 @inject LibraryUserProvider UserProvider
 @inject NotificationService NotificationService
+@inject IMongoRepository<Book> BookRepository
 
 
 <h1>Manage users</h1>
 <RadzenCard>
     <RadzenTextBox TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" @bind-Value=@SearchInput></RadzenTextBox>
     <RadzenButton Click=@(_ => Search()) Text="Search" ButtonStyle="ButtonStyle.Primary" />
+    <RadzenButton Click=@(_ => Reset()) Text="Reset" ButtonStyle="ButtonStyle.Secondary" />
 </RadzenCard>
 <RadzenCard>
     <RadzenDataList AllowVirtualization=@false WrapItems="@true" AllowPaging="@true"
@@ -20,22 +22,44 @@
         <Template Context="user">
             <RadzenCard Style="width: 100%; padding: 0; overflow: hidden;">
                 <div class="container">
-                    <div class="row" style="margin-left: calc(var(--bs-gutter-x) * -1); margin-right: calc(var(--bs-gutter-x) * -1)">
-                        <div class="col-lg-3 p-3 product-title">
-                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-color-secondary">@(user.UserName)</RadzenText>
-                        </div>
-                        <div class="col-lg-7 p-3">
-                            <div class="row d-flex">
-                                <div class="col-md-6 col-lg-2">
-                                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">@(user.Name)</RadzenText>
-                                    <RadzenText TextStyle="TextStyle.H6" class="mb-sm-2 mb-lg-0">@(user.Surname)</RadzenText>
-                                </div>
-                                <div class="col-md-6 col-lg-2">
-                                    <RadzenButton Text=@(user.Active ? "Activate" : user.Banned ? "Unban" : "Ban") Click="@(() => SetUserStatus(user))" Class="w-100" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                   <div class="row d-flex">
+                       <div class="col-lg-6 p-3 product-title">
+                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-color-secondary">@(user.UserName)</RadzenText>
+                       </div>
+                       <div class="col-md-6 p-3 ">
+                           <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">@(user.Name)</RadzenText>
+                           <RadzenText TextStyle="TextStyle.H6" class="mb-sm-2 mb-lg-0">@(user.Surname)</RadzenText>
+                       </div>
+                       <div class="col-md-6 p-3 ">
+                           @if (!user.Active)
+                           {
+                               <RadzenButton ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Style="margin: 5px" 
+                                             Shade="Shade.Lighter" Text="Activate" Click="@(() => SetUserActive(user))" Class="w-100"/>
+                           }
+                           else
+                           {
+                               @if (!user.Banned)
+                               {
+                                   <RadzenButton ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Style="margin: 5px" 
+                                                 Shade="Shade.Lighter" Text="Ban" Click="@(() => SetUserStatus(user))" Class="w-100"/>
+                               } else
+                               {
+                                   <RadzenButton ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Style="margin: 5px" 
+                                                 Shade="Shade.Lighter" Text="Unban" Click="@(() => SetUserStatus(user))" Class="w-100"/>
+                               }
+                           }
+                           <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Style="margin: 5px" 
+                                            Shade="Shade.Lighter" Text="Delete" Class="w-100"/>
+                       </div>  
+                       <div class="col-md-6 p-3 ">
+                           <RadzenDropDown AllowClear="true" TValue="string" Class="w-100" Style="margin: 5px" 
+                                           Data=@(user.Borrows.Select(b => b.BookName).ToList())
+                                           Change=@(args => OnChange(args, "DDInput")) />
+                           
+                           <RadzenButton ButtonStyle="ButtonStyle.Warning" Variant="Variant.Flat" Style="margin: 5px" 
+                                            Shade="Shade.Lighter" Click="() => RemoveBook(user)" Text="Remove" Class="w-100"/>
+                       </div>
+                   </div>
                 </div>
             </RadzenCard>
         </Template>
@@ -44,9 +68,10 @@
 
 @code{
 
-    private LibraryUser? user;
+    private LibraryUser? admin;
     private IEnumerable<LibraryUser>? users;
     private string? SearchInput { get; set; }
+    private string? bookName { get; set; }
 
     protected override Task OnInitializedAsync()
     {
@@ -54,10 +79,42 @@
         return base.OnInitializedAsync();
     }
 
+    void OnChange(object value, string name)
+    {
+        var targetRepo = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>) value) : value;
+        bookName = targetRepo.ToString();
+    }
+    
+    private async void RemoveBook(LibraryUser user)
+    {
+        if (user is null) return;
+        if (!user.Borrows.Exists(book => book.BookName == bookName)) return;
+        {
+            user.Borrows.Remove(user.Borrows.FirstOrDefault(book => book.BookName == bookName));
+
+            var uBook = BookRepository.FindOne(b => b.Name == bookName);
+            uBook.Copies++;
+            await BookRepository.ReplaceOneAsync(uBook);
+                
+            foreach (Notification notification in user?.Notifications.Where(not => not.RefId == uBook.Id.ToString() 
+                                                                                   && not.Action == NotificationAction.ReturnBookReminder
+                                                                                    && not.Resolved == false))
+            {
+                notification.Resolved = true;  
+            }
+            await UserRepository.ReplaceOneAsync(user);
+
+            NotificationService.Notify(new NotificationMessage() {Severity = NotificationSeverity.Info, Summary = "Book returned", 
+                Detail = $"Book removed.", Duration = 4000});
+
+            LoadData();
+        }
+    }
+
     private void LoadData()
     {
-        user = UserProvider.CurrentUser;
-        if (user != null)
+        admin = UserProvider.GetLatestUser();
+        if (admin != null)
             users = UserRepository.FilterBy(u => u.Role == UserRole.Customer);
     }
 
@@ -68,19 +125,43 @@
             users = UserRepository.SearchFor(SearchInput);
         }
     }
+    
+    private async Task Reset()
+        => await Task.Run(LoadData);
 
-    private async Task SetUserStatus(LibraryUser user)
+    private async Task SetUserActive(LibraryUser user)
     {
         if (!user.Active)
         {
             user.Active = true;
             user.Banned = false;
-        } else
+            
+            admin = UserProvider.GetLatestUser();
+
+            foreach (Notification notification in admin?.Notifications.Where(not => not.RefId == user.Id.ToString() && not.Action == NotificationAction.ConfirmRegistration))
+            {
+                notification.Resolved = true;  
+            }
+            
+            await UserRepository.ReplaceOneAsync(user);
+            await UserRepository.ReplaceOneAsync(admin);
+            
+            LoadData();
+            
+            NotificationService.Notify(new NotificationMessage() { Severity = NotificationSeverity.Success, Summary = "Status changed", 
+                Detail = $"{user.UserName} has been activated.", Duration = 4000 });
+
+        } 
+    }
+
+    private async Task SetUserStatus(LibraryUser user)
+    {
         user.Banned = !user.Banned;
         
         await UserRepository.ReplaceOneAsync(user);
         LoadData();
         
-        NotificationService.Notify(new NotificationMessage() { Severity = NotificationSeverity.Success, Summary = "Status changed", Detail = $"{user.UserName} is active and {(user.Banned ? "Banned" : "Unbanned")}", Duration = 4000 });
+        NotificationService.Notify(new NotificationMessage() { Severity = NotificationSeverity.Success, Summary = "Status changed", 
+            Detail = $"{user.UserName} is {(user.Banned ? "Banned" : "Unbanned")}", Duration = 4000 });
     }
 }

@@ -28,7 +28,13 @@
             await Js.InvokeVoidAsync("alert", "Invalid username or password");
             return;
         }
-
+        
+        if (!userAcc.Active)
+        {
+            await Js.InvokeVoidAsync("alert", "Your account is not yet active");
+            return;
+        }
+        
         if (AuthenticationStateProvider is LibAuthenticationStateProvider libAuthState)
             await libAuthState.UpdateAuthenticationState(userAcc);
 

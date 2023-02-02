@@ -12,6 +12,12 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
 {
     private readonly IMongoCollection<TDocument> _collection;
     
+    public MongoRepository(IMongoDbSettings settings)
+    {
+        var database = new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
+        _collection = database.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
+    }
+    
     public JsonDocument ExportRepository()
     {
         var json = JsonSerializer.Serialize(_collection.Find(FilterDefinition<TDocument>.Empty).ToList());
@@ -23,12 +29,6 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
         var json = jsonDocument.RootElement.GetRawText();
         var documents = JsonSerializer.Deserialize<List<TDocument>>(json);
         _collection.InsertMany(documents);
-    }
-
-    public MongoRepository(IMongoDbSettings settings)
-    {
-        var database = new MongoClient(settings.ConnectionString).GetDatabase(settings.DatabaseName);
-        _collection = database.GetCollection<TDocument>(GetCollectionName(typeof(TDocument)));
     }
 
     private static string GetCollectionName(ICustomAttributeProvider documentType)
