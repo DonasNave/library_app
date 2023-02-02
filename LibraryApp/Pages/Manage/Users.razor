@@ -6,10 +6,14 @@
 @inject IMongoRepository<LibraryUser> UserRepository
 @inject DialogService DialogService
 @inject LibraryUserProvider UserProvider
+@inject NotificationService NotificationService
 
 
 <h1>Manage users</h1>
-
+<RadzenCard>
+    <RadzenTextBox TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" @bind-Value=@SearchInput></RadzenTextBox>
+    <RadzenButton Click=@(_ => Search()) Text="Search" ButtonStyle="ButtonStyle.Primary" />
+</RadzenCard>
 <RadzenCard>
     <RadzenDataList AllowVirtualization=@false WrapItems="@true" AllowPaging="@true"
         Data="@users" TItem="LibraryUser" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
@@ -27,13 +31,9 @@
                                     <RadzenText TextStyle="TextStyle.H6" class="mb-sm-2 mb-lg-0">@(user.Surname)</RadzenText>
                                 </div>
                                 <div class="col-md-6 col-lg-2">
-                                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">Origin</RadzenText>
-                                    <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">@(user.Surname)</RadzenText>
+                                    <RadzenButton Text=@(user.Active ? "Activate" : user.Banned ? "Unban" : "Ban") Click="@(() => SetUserStatus(user))" Class="w-100" />
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-lg-2 p-3">
-                            <RadzenButton Text="Order now" Class="w-100" />
                         </div>
                     </div>
                 </div>
@@ -46,13 +46,41 @@
 
     private LibraryUser? user;
     private IEnumerable<LibraryUser>? users;
+    private string? SearchInput { get; set; }
 
     protected override Task OnInitializedAsync()
+    {
+        LoadData();
+        return base.OnInitializedAsync();
+    }
+
+    private void LoadData()
     {
         user = UserProvider.CurrentUser;
         if (user != null)
             users = UserRepository.FilterBy(u => u.Role == UserRole.Customer);
+    }
+
+    private void Search()
+    {
+        if (SearchInput?.Length >= 3)
+        {
+            users = UserRepository.SearchFor(SearchInput);
+        }
+    }
+
+    private async Task SetUserStatus(LibraryUser user)
+    {
+        if (!user.Active)
+        {
+            user.Active = true;
+            user.Banned = false;
+        } else
+        user.Banned = !user.Banned;
         
-        return base.OnInitializedAsync();
+        await UserRepository.ReplaceOneAsync(user);
+        LoadData();
+        
+        NotificationService.Notify(new NotificationMessage() { Severity = NotificationSeverity.Success, Summary = "Status changed", Detail = $"{user.UserName} is active and {(user.Banned ? "Banned" : "Unbanned")}", Duration = 4000 });
     }
 }

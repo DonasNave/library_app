@@ -4,6 +4,7 @@
 @inject LibraryUserProvider LibraryUserProvider
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime Js
+@inject DialogService DialogService
 @inject NavigationManager NavigationManager
 
 
@@ -32,7 +33,6 @@
             await libAuthState.UpdateAuthenticationState(userAcc);
 
         LibraryUserProvider.CurrentUser = userAcc;
-
-        NavigationManager.NavigateTo("/", true);
+        DialogService.Close();
     }
 }

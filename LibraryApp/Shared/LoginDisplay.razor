@@ -26,14 +26,14 @@
         NavigationManager.NavigateTo("/");
     }
 
-    public async Task OpenLogin()
+    private async Task OpenLogin()
     {
         await DialogService.OpenAsync<Login>("Login",
                new Dictionary<string, object>() {},
                new DialogOptions() { Width = "450px", Height = "auto", Draggable = true });
     }
 
-    public async Task OpenRegister()
+    private async Task OpenRegister()
     {
         await DialogService.OpenAsync<Register>("Register",
                new Dictionary<string, object>() {},

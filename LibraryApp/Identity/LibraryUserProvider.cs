@@ -10,6 +10,16 @@ public class LibraryUserProvider
     private readonly IMongoRepository<Notification> _notificationsRepository;
     private readonly PasswordHasher<LibraryUser> _passwordHasher;
     public LibraryUser? CurrentUser { get; set; }
+    
+    public LibraryUser? GetLatestUser()
+    {
+        if (CurrentUser == null)
+        {
+            return null;
+        }
+        return _libUsersRepository.FindOneAsync(x => x.UserName == CurrentUser.UserName).Result;
+    }
+       
 
     public LibraryUserProvider(IMongoRepository<LibraryUser> libUsersRepository, IMongoRepository<Notification> notificationRepository, PasswordHasher<LibraryUser> passwordHasher)
     {

@@ -12,7 +12,6 @@
 @inject LibraryUserProvider UserProvider
 @inject DialogService DialogService
 @inject NotificationService NotificationService
-
 <h1>Books</h1>
 
 <p>Books currently listed in our library.</p>
@@ -20,6 +19,7 @@
 <RadzenCard>
     <RadzenTextBox TextStyle="TextStyle.Subtitle2" TagName="TagName.H3" @bind-Value=@SearchInput></RadzenTextBox>
     <RadzenButton Click=@(_ => Search()) Text="Search" ButtonStyle="ButtonStyle.Primary" />
+    <RadzenButton Click=@(_ => Reset()) Text="Reset" ButtonStyle="ButtonStyle.Secondary" />
 </RadzenCard>
 
 @if (_books == null) // TODO <loadable> component
@@ -33,33 +33,33 @@ else
     PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" Data="@_books" TItem="Book" ColumnWidth="300px"
     LogicalFilterOperator="LogicalFilterOperator.Or">
         <Columns>
-            <RadzenDataGridColumn TItem="Book" Property="Name" Filterable="false" Title="Name" Frozen="true" Width="100px"
-            TextAlign="TextAlign.Center" />
-            @* <RadzenDataGridColumn TItem="Employee" Title="Photo" Frozen="true" Sortable="false" Filterable="false"
-                Width="80px" TextAlign="TextAlign.Center" > *@
-            @* <Template Context="data"> *@
-            @* <RadzenImage Path="@data.Photo" class="rz-gravatar" /> *@
-            @* </Template> *@
-            @* </RadzenDataGridColumn> *@
-            @* <RadzenDataGridColumn TItem="Book" Property="AltName" Title="Alternative name" Frozen="true" Width="100px" /> *@
-            <RadzenDataGridColumn TItem="Book" Property="Description" Title="Last Name" Width="200px" />
-            <RadzenDataGridColumn TItem="Book" Property="Released" FormatString="{0:d}" Title="Released" Width="90px" />
-            <RadzenDataGridColumn TItem="Book" Property="Pages" FormatString="{0:d}" Title="Pages" Width="80px" />
+            <RadzenDataGridColumn TItem="Book" Title="Cover" Sortable="false" Filterable="false" Width="80px" TextAlign="TextAlign.Center" > 
+                <Template Context="data"> 
+                    <RadzenImage Path="@data.ImageFront.Data" class="rz-gravatar" /> 
+                    <RadzenImage Path="@data.ImageCover.Data" class="rz-gravatar" /> 
+                </Template> 
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Book" Property="Name" Title="Name" Width="100px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn TItem="Book" Property="Released" FormatString="{0:yyyy}" Title="Released" Width="80px" />
+            <RadzenDataGridColumn TItem="Book" Property="Author.Name" Title="Author" Width="90px" />
+            <RadzenDataGridColumn TItem="Book" Property="Copies" Title="Copies" Width="50px" />
+            
             <AuthorizeView Roles="Customer">
                 <RadzenDataGridColumn TItem="Book" Property="Borrow" Filterable="false" Sortable="false" Title="" Width="90px">
                     <Template Context="data">
-                        <RadzenButton ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat" Shade="Shade.Lighter" 
-                                      Icon="add" Class="m-1" Click=@(() => BorrowBook(data.Id)) Text="Borrow" />
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter" 
+                                      Icon="plus" Class="m-1" Click=@(() => BorrowBook(data.Id)) 
+                                      Text="@(user.Borrows.Exists(b => b.Id == data.Id.ToString()) ? 
+                                                "Return" : "Borrow")" />
                     </Template>
                 </RadzenDataGridColumn>
             </AuthorizeView>
             <AuthorizeView Roles="Admin">
-                <RadzenDataGridColumn TItem="Book" Property="Delete" Filterable="false" Sortable="false" Title=""
-                    Width="90px">
-                        <Template Context="data">
-                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter"
-                                Icon="delete" Class="m-1" Click=@(() => DeleteBook(data.Id)) Text="Delete" />
-                        </Template>
+                <RadzenDataGridColumn TItem="Book" Property="Delete" Filterable="false" Sortable="false" Title="" Width="90px">
+                    <Template Context="data">
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat" Shade="Shade.Lighter"
+                            Icon="delete" Class="m-1" Click=@(() => DeleteBook(data.Id)) Text="Delete" />
+                    </Template>
                 </RadzenDataGridColumn>
             </AuthorizeView>
             <RadzenDataGridColumn TItem="Book" Property="Info" Filterable="false" Sortable="false" Title="" Width="90px">
@@ -75,7 +75,12 @@ else
 @code {
     private IEnumerable<Book>? _books;
 
+    private LibraryUser? user;
+
     private string? SearchInput { get; set; }
+
+    private async Task Reset()
+        => await Task.Run(() => LoadBooks());
 
     private async Task Search()
     {
@@ -94,15 +99,25 @@ else
 
     private async Task BorrowBook(ObjectId bookId)
     {
-        var curUser = UserProvider.CurrentUser;
-        if (curUser is not null)
+        user = UserProvider.GetLatestUser();
+        if (user is not null)
         {
-            if (curUser.Borrows.Exists(x => x.Id == bookId.ToString()))
+            if (user.Borrows.Exists(book => book.Id == bookId.ToString()))
             {
-                ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Info, Summary = "Already borrowed", Detail = $"You have this book borrowed already.", Duration = 4000 });
+                user.Borrows.Remove(user.Borrows.FirstOrDefault(book => book.Id == bookId.ToString()));
+                await UserRepository.ReplaceOneAsync(user);
+
+                var uBook = _books?.FirstOrDefault(x => x.Id == bookId);
+                uBook.Copies++;
+                await BookRepository.ReplaceOneAsync(uBook);
+
+                ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Info, Summary = "Book returned", Detail = $"You have returned this book.", Duration = 4000 });
+
+                LoadBooks();
                 return;
             }
-            if (curUser.Borrows.Count >= 6)
+
+            if (user.Borrows.Count >= 6)
             {
                 ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Warning, Summary = "Limit reached", Detail = $"Limit of books borrowed has been reached.", Duration = 4000 });
                 return;
@@ -123,21 +138,20 @@ else
 
                 var notification = new Notification()
                 {
-                    AssigneeId = curUser.Id.ToString(),
+                    AssigneeId = user.Id.ToString(),
                     RefId = bookId.ToString(),
                     Action = NotificationAction.ReturnBookReminder,
                     DueTo = DateTime.Now.AddDays(7)
                 };
                 
-                curUser.Borrows.Add(borrow);
-                curUser.Notifications.Add(notification);
+                user.Borrows.Add(borrow);
+                user.Notifications.Add(notification);
 
-                await UserRepository.ReplaceOneAsync(curUser);
+                await UserRepository.ReplaceOneAsync(user);
                 ShowNotification(new NotificationMessage() { Severity = NotificationSeverity.Success, Summary = "Book borrowed", Detail = $"{book.Name} has been borrowed", Duration = 4000 });
             }
         }
         LoadBooks();
-        
     }
 
     async Task OpenBook(ObjectId bookId)
@@ -145,6 +159,7 @@ else
         await DialogService.OpenAsync<BookDetail>($"Book",
         new Dictionary<string, object>() { { "BookId", bookId } },
         new DialogOptions() { Width = "800px", Height = "700px" });
+        LoadBooks();
     }
 
     async void ShowNotification(NotificationMessage message)
@@ -156,6 +171,7 @@ else
 
     protected override Task<bool> OnInitializedAsync()
     {
+        user = UserProvider.CurrentUser;
         LoadBooks();
         return Task.Run(() => true);
     }

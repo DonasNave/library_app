@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using LibraryApp.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using LibraryApp.Identity;
@@ -6,6 +7,7 @@ using LibraryApp.Data.Models;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,7 +65,7 @@ var timer = new PeriodicTimer(TimeSpan.FromMinutes(10));
 
 //while (await timer.WaitForNextTickAsync())
 //{
-    //Method from notifier to be executed every 10 minutes
+//Method from notifier to be executed every 10 minutes
 //}
 
 app.Run();

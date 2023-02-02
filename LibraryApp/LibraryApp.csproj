@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Data\Documents" />
       <Folder Include="Pages\Products\Details" />
       <Folder Include="Pages\Products\Overviews" />
     </ItemGroup>

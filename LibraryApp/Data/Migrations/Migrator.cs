@@ -1,91 +1,62 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using LibraryApp.Data.Models;
 using Microsoft.AspNetCore.Identity;
+using MongoDB.Driver;
 
 namespace LibraryApp.Data.Migrations;
 
 public class Migrator
 {
-    private readonly ICollection<Book> _dummyBooks = new List<Book>()
-    {
-        new()
-        {
-            Author = new (){ Name="Tim of Books", Birth = DateTime.Now.AddYears(-55), BooksWritten = new (){"O čem spím"}},
-            Tags = new(){"adventure", "drama"}, Name = "O čem spím", AltName = "Nic moc", Copies = 5, Pages = 321,
-            Description = "Truly magnificent work of literature.", Released = DateTime.Now, ISBN = "null", Publisher = "Blackrock com."
-        },
-        new()
-        {
-            Author = new (){ Name="Hubert Reed", Birth = DateTime.Now.AddYears(-65), BooksWritten = new (){"Wool"}},
-            Tags = new(){"sci-fi", "drama"}, Name = "Wool", AltName = "Spicy", Description = "Fantasy about wool sellers.",
-            Released = DateTime.Now, ISBN = "561919BFG", Publisher = "Blackrock com.", Copies = 6, Pages = 245,
-
-        }
-    };
-
-    private readonly ICollection<LibraryUser> _dummyUsers = new List<LibraryUser>()
-    {
-        new()
-        {
-            UserName = "admin",
-            Role = UserRole.Admin,
-            PasswordHash = "admin"
-        },
-        new ()
-        {
-            UserName = "user",
-            Role = UserRole.Customer,
-            PasswordHash = "user"
-        }
-    };
-
+    
     private readonly IMongoRepository<LibraryUser> _libUsersRepository;
     private readonly IMongoRepository<Book> _booksRepository;
-    private readonly PasswordHasher<LibraryUser> _passwordHasher;
 
     public Migrator(IMongoRepository<LibraryUser> libUsersRepository,
-                    IMongoRepository<Book> booksRepository, PasswordHasher<LibraryUser> passwordHasher)
+                    IMongoRepository<Book> booksRepository)
     {
         _libUsersRepository = libUsersRepository;
         _booksRepository = booksRepository;
-        _passwordHasher = passwordHasher;
-
-        foreach (var user in _dummyUsers)
-        {
-            user.PasswordHash = _passwordHasher.HashPassword(user, user.PasswordHash);
-        }
     }
 
-
-    public bool MigrateAll() => MigrateBooks() && MigrateUsers();
-
-    private bool MigrateBooks()
+    public void SetupIndex()
     {
-        try
-        {
-            _booksRepository.DeleteMany(book => true);
-            _booksRepository.InsertMany(_dummyBooks);
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-        return true;
+        var userBuilder = Builders<LibraryUser>.IndexKeys;
+        var indexModel = new CreateIndexModel<LibraryUser>(userBuilder.Text("Borrows.Created"));
+        indexModel.Options.ExpireAfter = TimeSpan.FromDays(6);
+        
+        _libUsersRepository.SetupIndex(indexModel);
     }
 
-    private bool MigrateUsers()
+    public void Export(RepositoryType type)
     {
-        try
+        var json = type switch
         {
-            _libUsersRepository.DeleteMany(user => true);
-            _libUsersRepository.InsertMany(_dummyUsers);
-        }
-        catch (Exception)
+            RepositoryType.LibraryUser => _libUsersRepository.ExportRepository(),
+            RepositoryType.Book => _booksRepository.ExportRepository(),
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+        };
+        
+        var serializedFile = JsonSerializer.Serialize(json);
+        File.WriteAllText($"./Data/Documents/{type.ToString()}export{DateTime.Now.ToString("yyyyMMddHHmmssffff")}.json", serializedFile);
+    }
+    
+    public void Import(RepositoryType type, string filePath)
+    {
+        //Load file from filePath
+        var json = JsonDocument.Parse(File.ReadAllText(filePath));
+        switch (type)
         {
-            return false;
+            case RepositoryType.Book:
+                _booksRepository.ImportRepository(json);
+                break;
+            
+            case RepositoryType.LibraryUser:
+                _libUsersRepository.ImportRepository(json);
+                break;
+            default: throw new NotImplementedException();
         }
-        return true;
     }
 }
 

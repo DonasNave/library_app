@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Text.Json;
 using LibraryApp.Data.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -7,6 +8,11 @@ namespace LibraryApp.Data;
 
 public interface IMongoRepository<TDocument> where TDocument : IDocument, ISearchable<TDocument>
 {
+    JsonDocument ExportRepository();
+    void ImportRepository(JsonDocument jsonDocument);
+    
+    Task<string> SetupIndex(CreateIndexModel<TDocument> indexModel, CancellationToken cancellationToken = default);
+
     IQueryable<TDocument> AsQueryable();
 
     IEnumerable<TDocument> FilterBy(

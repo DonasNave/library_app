@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.Json;
 using LibraryApp.Data.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,6 +11,19 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
     where TDocument : IDocument, ISearchable<TDocument>
 {
     private readonly IMongoCollection<TDocument> _collection;
+    
+    public JsonDocument ExportRepository()
+    {
+        var json = JsonSerializer.Serialize(_collection.Find(FilterDefinition<TDocument>.Empty).ToList());
+        return JsonDocument.Parse(json);
+    }
+    
+    public void ImportRepository(JsonDocument jsonDocument)
+    {
+        var json = jsonDocument.RootElement.GetRawText();
+        var documents = JsonSerializer.Deserialize<List<TDocument>>(json);
+        _collection.InsertMany(documents);
+    }
 
     public MongoRepository(IMongoDbSettings settings)
     {
@@ -23,6 +37,10 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument>
                 typeof(BsonCollectionAttribute),
                 true).FirstOrDefault() as BsonCollectionAttribute)?.CollectionName ?? string.Empty;
     }
+
+    public async Task<string> SetupIndex(CreateIndexModel<TDocument> indexModel, CancellationToken cancellationToken = default)
+        => await _collection.Indexes.CreateOneAsync(indexModel, cancellationToken: cancellationToken)
+                                    .ConfigureAwait(false);
 
     public IQueryable<TDocument> AsQueryable()
         => _collection.AsQueryable();

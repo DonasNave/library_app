@@ -6,11 +6,79 @@
 @inject IMongoRepository<LibraryUser> UserRepository
 @inject DialogService DialogService
 @inject LibraryUserProvider UserProvider
+@using LibraryApp.Data.Migrations
+@inject Migrator Migrator
 
 <h1>Manage data in dabase</h1>
 
-@code{
+<h2>Import JSON to database</h2>
+ <div class="col-md-6 p-3">
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Collection to be imported</RadzenText>
+        <RadzenDropDown AllowClear="true" TValue="string" Class="w-100" 
+                        Data=@(new List<RepositoryType>(){RepositoryType.LibraryUser, RepositoryType.Book})
+                        Change=@(args => OnChange(args, "DDInput")) />
+    </RadzenCard>
+</div>
+<div class="col-md-4 p-3">
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Upload with icon</RadzenText>
+        <RadzenUpload Url="upload/single" Icon="upload" ChooseText="" Progress=@(args => OnProgress(args, "Upload with icon"))>
+        </RadzenUpload>
+    </RadzenCard>
+</div>
 
+<div class="col-md-6 p-3">
+    <RadzenCard>
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Choose collection that will be exported</RadzenText>
+        <RadzenDropDown AllowClear="true" TValue="string" Class="w-100" 
+                        Data=@(new List<RepositoryType>(){RepositoryType.LibraryUser, RepositoryType.Book})
+                        Change=@(args => OnChange(args, "DDOutput")) />
+        <RadzenButton Text="Export" Click="@OnExport" />
+    </RadzenCard>
+    
+</div>
+
+
+
+@code{
+    
+    private RepositoryType _inputType = RepositoryType.LibraryUser;
+    
+    private RepositoryType _exportType = RepositoryType.LibraryUser;
+    
+    private void ExportData(RepositoryType repositoryType)
+        => Migrator.Export(repositoryType);
+    
+    private void ImportData(RepositoryType repositoryType, string fileName)
+        => Migrator.Import(repositoryType, fileName);
+    
+    void OnChange(object value, string name)
+    {
+        var targetRepo = value is IEnumerable<object> ? string.Join(", ", (IEnumerable<object>)value) : value;
+
+        if (name == "DDInput")
+        {
+            _inputType = (RepositoryType)targetRepo;
+        }
+        else if (name == "DDOutput")
+        {
+            _exportType = (RepositoryType)targetRepo;
+        }
+    }
+
+    void OnProgress(UploadProgressArgs args, string name)
+    {
+        if (args.Progress != 100) return;
+        foreach (var file in args.Files)
+        {
+            ImportData(_inputType, file.Name);
+        }
+    }
+    
+    void OnExport()
+        => ExportData(_exportType);
+    
     protected override Task OnInitializedAsync()
     {
         return base.OnInitializedAsync();

@@ -2,6 +2,7 @@
 @using MongoDB.Bson
 @using LibraryApp.Data
 @inject IMongoRepository<Book> BookRepo
+@inject DialogService DialogService
 
 
 @if (Book == null)
@@ -178,11 +179,12 @@ else
         book.ImageCover = ImageCover;
         book.ImageFront = ImageFront;
         BookRepo.ReplaceOne(book);
+        Cancel();
     }
 
     private void Cancel()
     {
-        
+       DialogService.Close();
     }
 
     private void OnProgress(UploadProgressArgs args) => ProgressInfo = $"Uploading {args.Progress}%";
